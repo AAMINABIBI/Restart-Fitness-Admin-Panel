@@ -13,7 +13,8 @@ const AddWorkoutScreen = lazy(() => import('./screens/AddWorkoutScreen'));
 const PopularWorkoutsScreen = lazy(() => import('./screens/PopularWorkoutsScreen'));
 const RecipesScreen = lazy(() => import('./screens/RecipesScreen'));
 const AddRecipeScreen = lazy(() => import('./screens/AddRecipeScreen'));
-const DietPlanScreen = lazy(() => import('./screens/dietPlan'));
+const DietPlanScreen = lazy(() => import('./screens/DietPlanScreen'));
+const AddDietPlanScreen = lazy(() => import('./screens/AddDietPlanScreen'));
 const MealDetailScreen = lazy(() => import('./screens/MealDetailScreen'));
 const ExamsScreen = lazy(() => import('./screens/ExamsScreen'));
 const WeeklyChallengesScreen = lazy(() => import('./screens/weeklyChallenges'));
@@ -96,6 +97,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <DietPlanScreen />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/diet-plan/add"
+            element={
+              <ProtectedRoute>
+                <AddDietPlanScreen />
               </ProtectedRoute>
             }
           />

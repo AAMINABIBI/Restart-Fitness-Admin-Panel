@@ -1,0 +1,126 @@
+.add-diet-plan-screen-container {
+  display: flex;
+  min-height: 100vh;
+}
+
+.main-content {
+  flex: 1;
+  padding: 20px;
+  background: #f5f5f5;
+}
+
+.add-diet-plan-section {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+}
+
+.add-diet-plan-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.information {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.form-section {
+  max-width: 800px;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  display: block;
+  font-weight: 500;
+  margin-bottom: 5px;
+  color: #333;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+.add-day-button {
+  padding: 8px 16px;
+  background-color: #2196F3;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  margin-top: 10px;
+}
+
+.add-day-button:hover {
+  background-color: #1976D2;
+}
+
+.added-meals {
+  margin-top: 20px;
+}
+
+.daily-plan {
+  margin-bottom: 15px;
+}
+
+.daily-plan h4 {
+  margin: 0 0 10px 0;
+  color: #333;
+}
+
+.daily-plan p {
+  margin: 5px 0 5px 20px;
+  color: #555;
+}
+
+.form-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.back-button,
+.save-button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.back-button {
+  background-color: #f44336;
+  color: white;
+}
+
+.back-button:hover {
+  background-color: #d32f2f;
+}
+
+.save-button {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.save-button:hover {
+  background-color: #45a049;
+}
+
+.error-message {
+  color: #f44336;
+  margin: 10px 0;
+}
