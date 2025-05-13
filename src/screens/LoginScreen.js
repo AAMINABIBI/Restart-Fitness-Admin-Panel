@@ -23,27 +23,29 @@ function LoginScreen() {
     });
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError(null);
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  setError(null);
 
-    try {
-      await signInWithEmailAndPassword(auth, formData.email, formData.password);
-      console.log('Login successful:', formData.email);
-      navigate('/dashboard');
-    } catch (err) {
-      console.error('Login error:', err.message);
-      if (err.code === 'auth/wrong-password') {
-        setError('Incorrect password. Please try again.');
-      } else if (err.code === 'auth/user-not-found') {
-        setError('No user found with this email.');
-      } else if (err.code === 'auth/invalid-email') {
-        setError('Invalid email format.');
-      } else {
-        setError('Failed to login. Please try again later.');
-      }
+  try {
+    await signInWithEmailAndPassword(auth, formData.email, formData.password);
+    console.log('Login successful:', formData.email);
+    navigate('/dashboard');
+  } catch (err) {
+    console.error('Login error:', err.code, err.message); // Add err.code for clarity
+    if (err.code === 'auth/wrong-password') {
+      setError('Incorrect password. Please try again.');
+    } else if (err.code === 'auth/user-not-found') {
+      setError('No user found with this email.');
+    } else if (err.code === 'auth/invalid-email') {
+      setError('Invalid email format.');
+    } else if (err.code === 'auth/network-request-failed') {
+      setError('Network error. Please check your connection and try again.');
+    } else {
+      setError(`Failed to login: ${err.message}`);
     }
-  };
+  }
+};
 
   const handleRegisterRedirect = () => {
     navigate('/register-admin');
