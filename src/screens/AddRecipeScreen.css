@@ -1,0 +1,124 @@
+.add-recipe-screen-container {
+  display: flex;
+  min-height: 100vh;
+ 
+}
+
+.main-content {
+  flex: 1;
+  padding: 20px;
+  background: #f5f5f5;
+
+
+}
+
+.add-recipe-section {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+ 
+}
+
+.add-recipe-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.information {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.form-section {
+  max-width: 800px;
+ 
+}
+
+.form-group {
+  margin-bottom: 15px;
+    align-items: center;
+  justify-content: center;
+}
+
+.form-group label {
+  display: block;
+  font-weight: 500;
+  margin-bottom: 5px;
+  color: #333;
+}
+
+.form-group input,
+.form-group textarea {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+.macros-inputs {
+  display: flex;
+  gap: 10px;
+}
+
+.macros-inputs input {
+  flex: 1;
+}
+
+.upload-thumbnail-label {
+  padding: 8px 12px;
+  background-color: #e0e0e0;
+  border-radius: 4px;
+  cursor: pointer;
+  display: inline-block;
+}
+
+.thumbnail-preview {
+  margin-top: 10px;
+}
+
+.thumbnail-image {
+  max-width: 150px;
+  max-height: 150px;
+  border-radius: 4px;
+}
+
+.form-actions {
+  margin-top: 20px;
+}
+
+.back-button,
+.save-button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.back-button {
+  background-color: #f44336;
+  color: white;
+}
+
+.back-button:hover {
+  background-color: #d32f2f;
+}
+
+.save-button {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.save-button:hover {
+  background-color: #45a049;
+}
+
+.error-message {
+  color: #f44336;
+  margin: 10px 0;
+}

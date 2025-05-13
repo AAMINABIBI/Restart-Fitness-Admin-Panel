@@ -1,0 +1,114 @@
+.exams-screen-container {
+  display: flex;
+  min-height: 100vh;
+}
+
+.side-bar-container {
+  width: 280px;
+  flex-shrink: 0;
+}
+
+.main-content {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  background-color: #f0f2f5;
+}
+
+.exams-section {
+  padding: 20px;
+}
+
+.exams-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  background-color: #f8f9fa;
+  padding: 10px 20px;
+  border-radius: 8px;
+}
+
+.information {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #333;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.week-dropdown {
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  background-color: #ffffff;
+  cursor: pointer;
+}
+
+.user-info {
+  background-color: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.user-info-title {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #333;
+  margin: 15px;
+}
+
+.exams-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.exams-table th,
+.exams-table td {
+  padding: 12px 15px;
+  text-align: left;
+}
+
+.exams-table th {
+  background-color: #AE8240;
+  color: #ffffff;
+  font-weight: bold;
+}
+
+.exams-table tbody tr:nth-child(odd) {
+  background-color: #f8f9fa; /* Light gray for odd rows */
+}
+
+.exams-table tbody tr:nth-child(even) {
+  background-color: #fff; /* White for even rows */
+}
+
+.video-link-button {
+  background-color: #AE8240;
+  color: #fff;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.action-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  margin-right: 10px;
+}
+
+.action-button.view-button {
+  color: #d2b48c;
+}
+
+.action-button.delete-button {
+  color: #ff4d4f; /* Red color for delete button */
+}

@@ -1,0 +1,95 @@
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+  }
+  
+  .modal-content {
+    background-color: #ffffff;
+    padding: 20px;
+    border-radius: 10px;
+    width: 400px;
+    max-width: 90%;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
+  
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  
+  .modal-title-input {
+    margin: 0;
+    font-size: 1.5rem;
+    color: #333;
+    border: 1px solid #d2b48c;
+    border-radius: 5px;
+    padding: 5px;
+    width: 70%;
+  }
+  
+  .modal-close-button {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+    color: #333;
+  }
+  
+  .form-group {
+    margin-bottom: 15px;
+  }
+  
+  .form-group label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 5px;
+    color: #333;
+  }
+  
+  .form-group input[type="text"],
+  .form-group input[type="file"] {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #d2b48c;
+    border-radius: 5px;
+    font-size: 1rem;
+    color: #333;
+  }
+  
+  .form-group input[type="file"] {
+    padding: 3px;
+  }
+  
+  .submit-button {
+    background-color: #d2b48c;
+    color: #ffffff;
+    border: none;
+    padding: 10px;
+    width: 100%;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: bold;
+    margin-bottom: 10px;
+  }
+  
+  .add-more-button {
+    background: none;
+    border: 1px solid #d2b48c;
+    color: #d2b48c;
+    padding: 10px;
+    width: 100%;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+  }

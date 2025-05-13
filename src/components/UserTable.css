@@ -1,0 +1,58 @@
+.users-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.users-table th,
+.users-table td {
+  padding: 12px 15px;
+  text-align: left;
+}
+
+.users-table th {
+  background-color: #AE8240; /* Brown header */
+  color: #ffffff;
+  font-weight: bold;
+}
+
+.users-table tbody tr {
+  background-color: #d2b48c; /* Light pink rows */
+}
+
+.users-table tbody tr:nth-child(even) {
+  background-color: #ffffff; /* White for even rows */
+}
+
+.change-password-button {
+  background-color: #AE8240;
+  color: #ffffff;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+}
+
+.actions-column {
+  text-align: center;
+}
+
+.action-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  margin: 0 5px;
+  font-size: 1rem;
+}
+
+.action-button.view-button {
+  color: #666;
+}
+
+.action-button.delete-button {
+  color: #ff4d4f; /* Red color for delete */
+}

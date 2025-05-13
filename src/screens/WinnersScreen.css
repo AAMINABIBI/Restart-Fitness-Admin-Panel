@@ -1,0 +1,125 @@
+.winners-screen-container {
+    display: flex;
+    min-height: 100vh;
+  }
+  
+  .side-bar-container {
+    width: 280px;
+    flex-shrink: 0;
+  }
+  
+  .main-content {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    background-color: #f0f2f5;
+  }
+  
+  .winners-section {
+    padding: 20px;
+  }
+  
+  .winners-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    background-color: #f8f9fa;
+    padding: 10px 20px;
+    border-radius: 8px;
+  }
+  
+  .information {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #333;
+  }
+  
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  .week-dropdown {
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #ffffff;
+    cursor: pointer;
+  }
+  
+  .top-winners {
+    background-color: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  
+  .top-winners-title {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #333;
+    margin: 15px;
+  }
+  
+  .winners-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px
+  }
+  
+  .winners-table th,
+  .winners-table td {
+    padding: 12px 15px;
+    text-align: left;
+  }
+  
+  .winners-table th {
+    background-color: #AE8240;
+    color: #ffffff;
+    font-weight: bold;
+  }
+  
+  .winners-table tbody tr:nth-child(1) {
+    background-color: #f8e1e9; /* Light pink for 1st place */
+  }
+  
+  .winners-table tbody tr:nth-child(2) {
+    background-color: #97d297; /* Light green for 2nd place */
+  }
+  
+  .winners-table tbody tr:nth-child(3) {
+    background-color: #954343; /* Light teal for 3rd place */
+  }
+  
+  .position-badge {
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-weight: bold;
+  }
+  
+  .position-badge.position-1st {
+    background-color: #f8e1e9;
+    color: #333;
+  }
+  
+  .position-badge.position-2nd {
+    background-color: #e6f0e6;
+    color: #333;
+  }
+  
+  .position-badge.position-3rd {
+    background-color: #e6ecea;
+    color: #333;
+  }
+  
+  .action-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+  }
+  
+  .action-button.view-button {
+    color: #d2b48c;
+  }

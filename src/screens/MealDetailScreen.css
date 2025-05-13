@@ -1,0 +1,141 @@
+.meal-detail-screen-container {
+    display: flex;
+    min-height: 100vh;
+  }
+  
+  .side-bar-container {
+    width: 280px;
+    flex-shrink: 0;
+  }
+  
+  .main-content {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    background-color: #f0f2f5;
+  }
+  
+  .meal-detail-section {
+    padding: 20px;
+  }
+  
+  .meal-detail-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  
+  .meal-detail-header h2 {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #333;
+  }
+  
+  .add-more-button {
+    background-color: #d2b48c;
+    color: #fff;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+  }
+  
+  .meal-details-grid {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+
+  }
+  
+  .meal-detail-card {
+    background-color: #F6EFE5;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    width: calc(40% - 10px);
+    display: flex;
+    flex-direction: column;
+    margin: 20px;
+    align-items: center;
+  }
+  
+  .meal-image-placeholder {
+    width: 100px;
+    height: 100px;
+    background-color: #f5f5f5;
+    border: 1px solid #d2b48c;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 15px;
+  }
+  
+  .meal-image-placeholder span {
+    color: #666;
+    font-size: 0.9rem;
+  }
+  
+  .meal-info h3 {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 5px;
+  }
+  
+  .meal-title {
+    font-size: 1rem;
+    color: #666;
+    margin-bottom: 15px;
+    text-align: center;
+  }
+  
+  .meal-time,
+  .meal-calories,
+  .meal-ingredients,
+  .meal-preparation {
+    width: 100%;
+    margin-bottom: 15px;
+  }
+  
+  .meal-time span,
+  .meal-calories span,
+  .meal-ingredients span,
+  .meal-preparation span {
+    display: block;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 5px;
+  }
+  
+  .meal-time p,
+  .meal-calories p,
+  .meal-preparation p {
+    padding: 10px;
+    border: 1px solid #d2b48c;
+    border-radius: 5px;
+    color: #333;
+    margin: 0;
+  }
+  
+  .meal-ingredients ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .meal-ingredients li {
+    padding: 10px;
+    border: 1px solid #d2b48c;
+    border-radius: 5px;
+    margin-bottom: 5px;
+    color: #333;
+  }
+  
+  @media (max-width: 768px) {
+    .meal-detail-card {
+      width: 100%;
+    }
+  }

@@ -1,0 +1,104 @@
+.top-bar {
+  background-color: #ffffff;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 10px 20x;
+
+}
+
+.top-bar-center {
+  flex-grow: 1;
+}
+
+.search-bar {
+  display: flex;
+  align-items: center;
+  padding: 10px 10px;
+  margin: 10px;
+  width: 200px;
+  border: 10x solid #AE8240;
+  border-radius: 10px;
+}
+
+.search-icon {
+  margin-right: 5px;
+  color: #AE8240;
+  border: 10x solid #AE8240;
+  border-radius: 50%;
+}
+
+.search-bar input[type='text'] {
+  border: none;
+  outline: none;
+  flex-grow: 1;
+  font-size: 1rem;
+  padding: 5px;
+}
+
+.top-bar-right {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.notifications {
+  cursor: pointer;
+  border: 1px solid #AE8240;
+  border-radius: 50%;
+  padding: 7px;
+}
+
+.notification-icon {
+  font-size: 1.2rem;
+  color: #AE8240;
+
+}
+
+.language-selector {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  border: 1px solid #AE8240;
+  border-radius: 5px;
+  padding: 5px 8px;
+}
+
+.flag {
+  font-size: 1.2rem;
+}
+
+.language-code {
+  font-size: 1rem;
+  color: #d2b48c;
+  font-weight: bold;
+}
+
+.user-profile {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  margin-right: 8px;
+  object-fit: cover;
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.9rem;
+}
+
+.user-name {
+  font-weight: bold;
+  color: #333;
+}
+
+.user-email {
+  color: #777;
+}

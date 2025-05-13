@@ -1,0 +1,147 @@
+.weekly-challenges-container {
+    display: flex;
+    min-height: 100vh;
+  }
+  
+  .side-bar-container {
+    width: 280px;
+    flex-shrink: 0;
+  }
+  
+  .main-content {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    background-color: #f0f2f5;
+  }
+  
+  .challenges-section {
+    padding: 20px;
+  }
+  
+  .challenges-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    background-color: #f8f9fa;
+    padding: 10px 20px;
+    border-radius: 8px;
+  }
+  
+  .information {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #333;
+  }
+  
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  .add-rounds-button {
+    background-color: #AE8240;
+    color: #333;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  
+  .plus-icon {
+    font-size: 1.2rem;
+  }
+  
+  .months-dropdown {
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #ffffff;
+    cursor: pointer;
+  }
+  
+  .week-section {
+    margin-bottom: 30px;
+  }
+  
+  .week-title {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 15px;
+    text-transform: uppercase;
+  }
+  
+  .challenges-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 20px;
+  }
+  
+  
+  .challenge-card {
+    background-color: #e4d1b4;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    position: relative;
+  }
+  
+  .challenge-image {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+  }
+  
+  .challenge-info {
+    padding: 10px;
+    text-align: center;
+  }
+  
+  .challenge-info h4 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: bold;
+    color: #333;
+  }
+  
+  .challenge-info p {
+    margin: 5px 0 0;
+    font-size: 0.9rem;
+    color: #28241e;
+  }
+
+  .challenge-image {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+    cursor: pointer; /* Add cursor pointer to indicate clickability */
+  }
+  .challenge-actions {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: flex;
+    gap: 5px;
+  }
+  
+  .action-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+  }
+  
+  .action-button.edit-button {
+    color: #d2b48c;
+  }
+  
+  .action-button.delete-button {
+    color: #ff4d4f;
+  }

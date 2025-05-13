@@ -1,0 +1,115 @@
+.register-admin-screen-container {
+    display: flex;
+    height: 100vh;
+  }
+  
+  .register-form-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 40px;
+    background-color: #fff;
+  }
+  
+  .register-form-section h4 {
+    font-size: 1.2rem;
+    color: #333;
+    margin-bottom: 30px;
+    text-align: center;
+    max-width: 300px;
+  }
+  
+  form {
+    width: 100%;
+    max-width: 400px;
+  }
+  
+  .form-group {
+    margin-bottom: 20px;
+  }
+  
+  .form-group input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 1rem;
+  }
+  
+  .register-button {
+    width: 100%;
+    background-color: #d2b48c;
+    color: #fff;
+    border: none;
+    padding: 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+  }
+  
+  .register-button:hover {
+    background-color: #b89778;
+  }
+  
+  .login-redirect {
+    margin-top: 15px;
+    font-size: 0.9rem;
+    color: #555;
+    text-align: center;
+  }
+  
+  .login-link {
+    color: #d2b48c;
+    cursor: pointer;
+    text-decoration: underline;
+  }
+  
+  .login-link:hover {
+    color: #b89778;
+  }
+  
+  .copyright {
+    margin-top: 20px;
+    font-size: 0.8rem;
+    color: #777;
+  }
+  
+  .register-image-section {
+    flex: 1;
+    background: url('../assets/Login-image.png') no-repeat center center;
+    background-size: cover;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+  
+  .quote {
+    color: #fff;
+    font-size: 1.5rem;
+    text-align: center;
+    max-width: 400px;
+    position: relative;
+  }
+  
+  .quote-icon {
+    font-size: 3rem;
+    position: absolute;
+    top: -20px;
+    left: -20px;
+    opacity: 0.5;
+  }
+  
+  .sidebar-logo {
+    width: 150px;
+    margin-bottom: 20px;
+  }
+  
+  .error-message {
+    color: #ff4d4f;
+    font-size: 0.9rem;
+    text-align: center;
+    margin-bottom: 15px;
+  }

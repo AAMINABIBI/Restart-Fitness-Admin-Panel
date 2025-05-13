@@ -1,0 +1,108 @@
+.side-bar {
+  width: 280px;
+  background-color: #AE8240; /* Light brown background from the image */
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  height: auto; /* Change from 100vh to auto */
+  color: #ffffff;
+  /* position: fixed; Remove this line */
+  /* top: 0; */
+  /* left: 0; */
+  z-index: 10;
+  overflow-y: auto; /* Keep the scroll if content overflows */
+  margin-right: 20px; /* Add some margin to the right to separate from main content */
+}
+
+.sidebar-logo {
+  text-align: center;
+  height: 150px;
+  width: 180px;
+  margin: 10px;
+  background-color:#f3e3d0;
+  border-radius: 80px;
+}
+
+.search-bar {
+  display: flex;
+  align-items: center;
+  border: none;
+  border-radius: 5px;
+  padding: 8px 10px;
+  margin-bottom: 20px;
+  background-color: #e6d5b8; /* Slightly lighter brown for contrast */
+}
+
+.search-icon {
+  margin-right: 8px;
+  color: #333; /* Darker color for visibility */
+}
+
+.search-bar input[type='text'] {
+  border: none;
+  outline: none;
+  flex-grow: 1;
+  font-size: 1rem;
+  padding: 5px;
+  background-color: transparent;
+  color: #333;
+}
+
+.nav-links {
+  display: flex;
+  flex-direction: column;
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  padding: 10px 15px;
+  text-decoration: none;
+  color: #ffffff;
+  border-radius: 5px;
+  margin-bottom: 8px;
+}
+
+.nav-link.active {
+  background-color: #e6d5b8; /* Lighter brown for active state */
+  color: #333;
+}
+
+.nav-icon {
+  margin-right: 10px;
+  color: #ffffff;
+  font-size: 1.1rem;
+}
+
+.nav-link.active .nav-icon {
+  color: #333; /* Match active state text color */
+}
+
+.nav-group {
+  margin-left: 30px;
+  display: flex;
+  flex-direction: column;
+}
+
+.sub-link {
+  display: flex;
+  align-items: center;
+  padding: 8px 15px;
+  text-decoration: none;
+  color: #ffffff;
+}
+
+.dot {
+  margin-right: 8px;
+  color: #ffffff;
+}
+
+.copyright {
+  font-size: 0.8rem;
+  text-align: left;
+  color: #ffffff;
+}
+.sub-link.active {
+  color: #333; /* Match the active state of nav-link */
+  background-color: #e6d5b8; /* Same background as active nav-link */
+}

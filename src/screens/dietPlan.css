@@ -1,0 +1,235 @@
+.diet-plan-screen-container {
+    display: flex;
+    min-height: 100vh;
+  }
+  
+  .side-bar-container {
+    width: 280px;
+    flex-shrink: 0;
+  }
+  
+  .main-content {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    background-color: #f0f2f5;
+  }
+  
+  .diet-plan-section {
+    padding: 20px;
+  }
+  
+  .diet-plan-section h2 {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 20px;
+  }
+  
+  .meals-grid {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 40px;
+    overflow-x: auto;
+    padding-bottom: 10px;
+  }
+  
+  .meal-card {
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    padding: 10px;
+    width: 150px;
+    flex-shrink: 0;
+  }
+  
+  .meal-image {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 8px;
+    margin-bottom: 10px;
+  }
+  
+  .meal-name {
+    font-size: 1rem;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 5px;
+  }
+  
+  .meal-time {
+    font-size: 0.9rem;
+    color: #666;
+  }
+  
+  .user-info-section {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+  }
+  
+  .user-info-section h3 {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 20px;
+  }
+  
+  .user-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .user-table th,
+  .user-table td {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid #e0e0e0;
+  }
+  
+  .user-table th {
+    background-color: #AE8240;
+    color: #fff;
+    font-weight: bold;
+  }
+  
+  .user-table td {
+    color: #333;
+  }
+  
+  .assign-button {
+    background-color: #ff4d4f;
+    color: #fff;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+  }
+  
+  .edit-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+  }
+  .meal-card {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    padding: 10px;
+    width: 150px;
+    flex-shrink: 0;
+    cursor: pointer; /* Add cursor pointer to indicate clickability */
+    transition: transform 0.2s; /* Smooth transition for hover effect */
+  }
+  
+  .meal-card:hover {
+    transform: scale(1.05); /* Slightly scale up on hover */
+  }
+
+
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+  }
+  
+  .modal {
+    background-color: #fff;
+    border-radius: 8px;
+    width: 400px;
+    max-width: 90%;
+    padding: 20px;
+    position: relative;
+  }
+  
+  .modal-close-button {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: none;
+    border: none;
+    cursor: pointer;
+  }
+  
+  .modal-content {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  .user-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+  }
+  
+  .user-avatar {
+    width: 60px;
+    height: 60px;
+    background-color: #e0e0e0;
+    border-radius: 50%;
+  }
+  
+  .user-details h3 {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #333;
+    margin: 0 0 5px;
+  }
+  
+  .user-details p {
+    font-size: 0.9rem;
+    color: #666;
+    margin: 0;
+  }
+  
+  .meal-assignment {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .meal-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #e0e0e0;
+  }
+  
+  .meal-item span {
+    font-size: 1rem;
+    color: #333;
+  }
+  
+  .customize-button {
+    background: none;
+    border: none;
+    color: #4caf50;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  
+  .save-button {
+    background-color: #d2b48c;
+    color: #fff;
+    border: none;
+    padding: 10px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-weight: bold;
+    width: 100px;
+    align-self: center;
+  }
