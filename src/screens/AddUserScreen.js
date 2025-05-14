@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../firebase';
-import { collection, addDoc } from 'firebase/firestore';
+import { collection, addDoc, doc, setDoc } from 'firebase/firestore';
 import TopBar from '../components/topBar';
 import SideBar from '../components/SideBar';
 import './AddUserScreen.css';
@@ -41,19 +41,25 @@ function AddUserScreen() {
     }
 
     try {
-      // Prepare user data
-      const userData = {
+      // Add user to 'users' collection
+      const userRef = await addDoc(collection(db, 'users'), {
         email: formData.email,
         name: formData.name,
         profileCompleted: formData.profileCompleted,
-        workoutAssigned: false,
-        dietPlanAssigned: false,
         createdAt: new Date().toISOString(),
-      };
+      });
+      console.log('User added to Firestore:', userRef.id);
 
-      // Add user to Firestore
-      const docRef = await addDoc(collection(db, 'users'), userData);
-      console.log('User added to Firestore:', docRef.id);
+      // Initialize userProgress document for the new user
+      const userProgressRef = doc(db, 'userProgress', userRef.id);
+      await setDoc(userProgressRef, {
+        currentLevel: 1,
+        status: 'in_progress',
+        updatedAt: new Date().toISOString(),
+        assignedWorkouts: [],
+        assignedDietPlans: [],
+      });
+      console.log('User progress initialized:', userRef.id);
 
       // Navigate back to dashboard
       navigate('/dashboard');
@@ -93,7 +99,7 @@ function AddUserScreen() {
                     name="name"
                     value={formData.name}
                     onChange={handleInputChange}
-                    placeholder="XYZ"
+                    placeholder="Usama Yousaf"
                     required
                   />
                 </div>
@@ -104,7 +110,7 @@ function AddUserScreen() {
                     name="email"
                     value={formData.email}
                     onChange={handleInputChange}
-                    placeholder="xyz@gmail.com"
+                    placeholder="usama.yousaf0334@gmail.com"
                     required
                   />
                 </div>

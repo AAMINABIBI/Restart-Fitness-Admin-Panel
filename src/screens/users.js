@@ -28,7 +28,7 @@ function UserScreen() {
   }, []);
 
   const handleAddUsersClick = () => {
-    navigate('/add-user'); // Remove the state object
+    navigate('/add-user');
   };
 
   const filteredUsers = users.filter((user) =>
