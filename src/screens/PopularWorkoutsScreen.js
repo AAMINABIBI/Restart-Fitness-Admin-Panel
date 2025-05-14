@@ -89,10 +89,17 @@ function PopularWorkoutsScreen() {
 
   const handleEditInputChange = (e) => {
     const { name, value } = e.target;
-    setEditFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    if (name === 'tags') {
+      setEditFormData(prev => ({
+        ...prev,
+        tags: value ? value.split(',').map(tag => tag.trim()) : []
+      }));
+    } else {
+      setEditFormData(prev => ({
+        ...prev,
+        [name]: value
+      }));
+    }
   };
 
   const handleImageChange = (e) => {
@@ -125,7 +132,6 @@ function PopularWorkoutsScreen() {
       let newThumbnailURL = editFormData.thumbnailURL;
       let newVideoURL = editFormData.videoURL;
 
-      // Handle image upload
       if (imageFile) {
         const storageReference = storageRef(storage, `workouts/thumbs/${editFormData.id}/${imageFile.name}`);
         const uploadTask = uploadBytesResumable(storageReference, imageFile);
@@ -144,10 +150,9 @@ function PopularWorkoutsScreen() {
             newThumbnailURL = await getDownloadURL(uploadTask.snapshot.ref);
           }
         );
-        await uploadTask; // Wait for image upload to complete
+        await uploadTask;
       }
 
-      // Handle video upload
       if (videoFile) {
         const storageReference = storageRef(storage, `workouts/videos/${editFormData.id}/${videoFile.name}`);
         const uploadTask = uploadBytesResumable(storageReference, videoFile);
@@ -167,7 +172,7 @@ function PopularWorkoutsScreen() {
             await updateWorkout(newThumbnailURL, newVideoURL);
           }
         );
-        await uploadTask; // Wait for video upload to complete
+        await uploadTask;
       } else {
         await updateWorkout(newThumbnailURL, newVideoURL);
       }
@@ -186,7 +191,7 @@ function PopularWorkoutsScreen() {
       totalTime: parseInt(editFormData.totalTime) || 0,
       difficultyLevel: editFormData.difficultyLevel,
       intensity: editFormData.intensity,
-      tags: editFormData.tags?.length ? editFormData.tags : [],
+      tags: editFormData.tags,
       thumbnailURL: newThumbnailURL,
       videoURL: newVideoURL,
     });
@@ -417,7 +422,7 @@ function PopularWorkoutsScreen() {
                 <input
                   type="text"
                   name="tags"
-                  value={editFormData.tags?.join(', ') || ''}
+                  value={Array.isArray(editFormData.tags) ? editFormData.tags.join(', ') : ''}
                   onChange={handleEditInputChange}
                 />
               </div>

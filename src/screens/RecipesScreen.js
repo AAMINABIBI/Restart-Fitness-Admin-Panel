@@ -84,7 +84,12 @@ function RecipesScreen() {
 
   const handleEditInputChange = (e) => {
     const { name, value } = e.target;
-    if (name.startsWith('macros.')) {
+    if (name === 'tags') {
+      setEditFormData(prev => ({
+        ...prev,
+        tags: value ? value.split(',').map(tag => tag.trim()) : []
+      }));
+    } else if (name.startsWith('macros.')) {
       const macroField = name.split('.')[1];
       setEditFormData(prev => ({
         ...prev,
@@ -155,7 +160,7 @@ function RecipesScreen() {
         carbs: parseInt(editFormData.macros?.carbs) || 0,
         fat: parseInt(editFormData.macros?.fat) || 0,
       },
-      tags: editFormData.tags?.length ? editFormData.tags : [],
+      tags: editFormData.tags,
       cuisine: editFormData.cuisine,
       ageGroup: editFormData.ageGroup,
       thumbnailUrl: newThumbnailUrl,
@@ -384,7 +389,7 @@ function RecipesScreen() {
                 <input
                   type="text"
                   name="tags"
-                  value={editFormData.tags?.join(', ') || ''}
+                  value={Array.isArray(editFormData.tags) ? editFormData.tags.join(', ') : ''}
                   onChange={handleEditInputChange}
                 />
               </div>
