@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { db } from '../firebase';
-import { collection, getDocs } from 'firebase/firestore';
+import { db, storage } from '../firebase';
+import { collection, getDocs, doc, getDoc, updateDoc, ref } from 'firebase/firestore';
+import { ref as storageRef, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import Modal from 'react-modal';
 import TopBar from '../components/topBar';
 import SideBar from '../components/SideBar';
-import './RecipesScreen.css'; // Ensure your CSS handles pagination
+import './RecipesScreen.css';
+import { FaEdit } from "react-icons/fa";
 
 Modal.setAppElement('#root');
 
@@ -16,10 +18,14 @@ function RecipesScreen() {
   const [searchTerm, setSearchTerm] = useState('');
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [selectedRecipe, setSelectedRecipe] = useState(null);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [editFormData, setEditFormData] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [imageFile, setImageFile] = useState(null);
+  const [uploadProgress, setUploadProgress] = useState(0);
 
-  // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(5); // You can adjust this value
+  const [itemsPerPage] = useState(5);
 
   useEffect(() => {
     const fetchRecipes = async () => {
@@ -49,16 +55,124 @@ function RecipesScreen() {
     setSelectedRecipe(null);
   };
 
+  const openEditModal = async (recipe) => {
+    setLoading(true);
+    try {
+      const recipeDoc = await getDoc(doc(db, 'recipes', recipe.id));
+      if (recipeDoc.exists()) {
+        const recipeData = { id: recipeDoc.id, ...recipeDoc.data() };
+        recipeData.tags = Array.isArray(recipeData.tags) ? recipeData.tags : [];
+        setEditFormData(recipeData);
+      } else {
+        setError('Recipe not found.');
+      }
+    } catch (err) {
+      console.error('Error fetching recipe for edit:', err.message);
+      setError('Failed to load recipe details.');
+    }
+    setLoading(false);
+    setEditModalOpen(true);
+  };
+
+  const closeEditModal = () => {
+    setEditModalOpen(false);
+    setEditFormData(null);
+    setImageFile(null);
+    setUploadProgress(0);
+    setError(null);
+  };
+
+  const handleEditInputChange = (e) => {
+    const { name, value } = e.target;
+    if (name.startsWith('macros.')) {
+      const macroField = name.split('.')[1];
+      setEditFormData(prev => ({
+        ...prev,
+        macros: { ...prev.macros, [macroField]: value }
+      }));
+    } else {
+      setEditFormData(prev => ({
+        ...prev,
+        [name]: value
+      }));
+    }
+  };
+
+  const handleImageChange = (e) => {
+    if (e.target.files[0]) {
+      const file = e.target.files[0];
+      if (file.size > 5 * 1024 * 1024) { // 5MB limit
+        setError('File size must be less than 5MB.');
+        return;
+      }
+      setImageFile(file);
+    }
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editFormData) return;
+
+    setLoading(true);
+    try {
+      let newThumbnailUrl = editFormData.thumbnailUrl;
+      if (imageFile) {
+        const storageReference = storageRef(storage, `recipes/thumbs/${editFormData.id}/${imageFile.name}`);
+        const uploadTask = uploadBytesResumable(storageReference, imageFile);
+
+        uploadTask.on(
+          'state_changed',
+          (snapshot) => {
+            const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+            setUploadProgress(progress);
+          },
+          (error) => {
+            console.error('Upload failed:', error.message);
+            setError('Failed to upload image.');
+          },
+          async () => {
+            newThumbnailUrl = await getDownloadURL(uploadTask.snapshot.ref);
+            await updateRecipe(newThumbnailUrl);
+          }
+        );
+      } else {
+        await updateRecipe(newThumbnailUrl);
+      }
+    } catch (err) {
+      console.error('Error saving recipe:', err.message);
+      setError('Failed to save recipe. Please try again.');
+    }
+    setLoading(false);
+  };
+
+  const updateRecipe = async (newThumbnailUrl) => {
+    await updateDoc(doc(db, 'recipes', editFormData.id), {
+      name: editFormData.name,
+      category: editFormData.category,
+      mealType: editFormData.mealType,
+      calories: parseInt(editFormData.calories) || 0,
+      macros: {
+        protein: parseInt(editFormData.macros?.protein) || 0,
+        carbs: parseInt(editFormData.macros?.carbs) || 0,
+        fat: parseInt(editFormData.macros?.fat) || 0,
+      },
+      tags: editFormData.tags?.length ? editFormData.tags : [],
+      cuisine: editFormData.cuisine,
+      ageGroup: editFormData.ageGroup,
+      thumbnailUrl: newThumbnailUrl,
+    });
+    setRecipes(recipes.map(r => r.id === editFormData.id ? { ...editFormData, thumbnailUrl: newThumbnailUrl } : r));
+    closeEditModal();
+  };
+
   const handleSearch = (e) => {
     setSearchTerm(e.target.value);
-    setCurrentPage(1); // Reset to the first page on new search
+    setCurrentPage(1);
   };
 
   const filteredRecipes = recipes.filter(recipe =>
     recipe.tags?.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
-  // Pagination logic
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentRecipes = filteredRecipes.slice(indexOfFirstItem, indexOfLastItem);
@@ -124,6 +238,7 @@ function RecipesScreen() {
                     <th>Cuisine</th>
                     <th>Age Group</th>
                     <th>Thumbnail</th>
+                    <th>Edit</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -147,6 +262,9 @@ function RecipesScreen() {
                             onClick={() => openModal(recipe)}
                           />
                         )}
+                      </td>
+                      <td>
+                        <FaEdit onClick={() => openEditModal(recipe)} />
                       </td>
                     </tr>
                   ))}
@@ -182,6 +300,151 @@ function RecipesScreen() {
               Close
             </button>
           </div>
+        )}
+      </Modal>
+
+      <Modal
+        isOpen={editModalOpen}
+        onRequestClose={closeEditModal}
+        contentLabel="Edit Recipe"
+        className="modal"
+        overlayClassName="overlay"
+      >
+        {loading ? (
+          <div className="loading-indicator">Loading...</div>
+        ) : editFormData ? (
+          <div className="modal-content">
+            <h2>Edit Recipe</h2>
+            <div className="modal-form">
+              <div className="form-group">
+                <label>Name</label>
+                <input
+                  type="text"
+                  name="name"
+                  value={editFormData.name || ''}
+                  onChange={handleEditInputChange}
+                />
+              </div>
+              <div className="form-group">
+                <label>Category</label>
+                <input
+                  type="text"
+                  name="category"
+                  value={editFormData.category || ''}
+                  onChange={handleEditInputChange}
+                />
+              </div>
+              <div className="form-group">
+                <label>Meal Type</label>
+                <input
+                  type="text"
+                  name="mealType"
+                  value={editFormData.mealType || ''}
+                  onChange={handleEditInputChange}
+                />
+              </div>
+              <div className="form-group">
+                <label>Calories</label>
+                <input
+                  type="number"
+                  name="calories"
+                  value={editFormData.calories || ''}
+                  onChange={handleEditInputChange}
+                />
+              </div>
+              <div className="form-group">
+                <label>Macros (Protein)</label>
+                <input
+                  type="number"
+                  name="macros.protein"
+                  value={editFormData.macros?.protein || ''}
+                  onChange={handleEditInputChange}
+                />
+              </div>
+              <div className="form-group">
+                <label>Macros (Carbs)</label>
+                <input
+                  type="number"
+                  name="macros.carbs"
+                  value={editFormData.macros?.carbs || ''}
+                  onChange={handleEditInputChange}
+                />
+              </div>
+              <div className="form-group">
+                <label>Macros (Fat)</label>
+                <input
+                  type="number"
+                  name="macros.fat"
+                  value={editFormData.macros?.fat || ''}
+                  onChange={handleEditInputChange}
+                />
+              </div>
+              <div className="form-group">
+                <label>Tags (comma-separated)</label>
+                <input
+                  type="text"
+                  name="tags"
+                  value={editFormData.tags?.join(', ') || ''}
+                  onChange={handleEditInputChange}
+                />
+              </div>
+              <div className="form-group">
+                <label>Cuisine</label>
+                <input
+                  type="text"
+                  name="cuisine"
+                  value={editFormData.cuisine || ''}
+                  onChange={handleEditInputChange}
+                />
+              </div>
+              <div className="form-group">
+                <label>Age Group</label>
+                <input
+                  type="text"
+                  name="ageGroup"
+                  value={editFormData.ageGroup || ''}
+                  onChange={handleEditInputChange}
+                />
+              </div>
+              <div className="form-group">
+                <label>Current Thumbnail</label>
+                {editFormData.thumbnailUrl && (
+                  <img
+                    src={editFormData.thumbnailUrl}
+                    alt={`${editFormData.name} thumbnail`}
+                    className="thumbnail-image"
+                    style={{ maxWidth: '200px', marginBottom: '10px' }}
+                  />
+                )}
+              </div>
+              <div className="form-group">
+                <label>Upload New Thumbnail</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                />
+                {uploadProgress > 0 && uploadProgress < 100 && (
+                  <div className="progress-bar">
+                    <div className="progress-bar-fill" style={{ width: `${uploadProgress}%` }}>
+                      {uploadProgress.toFixed(2)}%
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+            <div className="modal-buttons">
+              <button onClick={handleSaveEdit} disabled={loading}>
+                {loading ? 'Saving...' : 'Save'}
+              </button>
+              <button onClick={closeEditModal} disabled={loading}>
+                Cancel
+              </button>
+            </div>
+            {error && <p className="error-message">{error}</p>}
+          </div>
+        ) : (
+          <p>No recipe data available.</p>
         )}
       </Modal>
     </div>

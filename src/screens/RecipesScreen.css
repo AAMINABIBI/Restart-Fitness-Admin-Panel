@@ -1,19 +1,20 @@
 .recipes-container {
   display: flex;
-  min-height: 100vh;
+}
+
+.side-bar-container {
+  flex: 0 0 250px;
 }
 
 .main-content {
   flex: 1;
   padding: 20px;
-  background: #f5f5f5;
 }
 
 .recipes-section {
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  background-color: white;
   padding: 20px;
+  border-radius: 8px;
 }
 
 .recipes-header {
@@ -24,9 +25,8 @@
 }
 
 .information {
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: #333;
+  font-size: 24px;
+  font-weight: bold;
 }
 
 .search-add {
@@ -35,49 +35,45 @@
 }
 
 .search-input {
-  padding: 8px 12px;
+  padding: 8px;
   border: 1px solid #ddd;
   border-radius: 4px;
-  font-size: 1rem;
-  width: 200px;
 }
 
 .add-recipe-button {
   padding: 8px 16px;
-  background-color: #FF9800;
+  background-color: #4CAF50;
   color: white;
   border: none;
   border-radius: 4px;
   cursor: pointer;
-  transition: background-color 0.3s;
 }
 
 .add-recipe-button:hover {
-  background-color: #F57C00;
+  opacity: 0.9;
+}
+
+.error-message {
+  color: red;
+  margin-bottom: 10px;
 }
 
 .recipes-table {
   width: 100%;
   border-collapse: collapse;
-  background: #fff;
-  font-size: 1rem;
+  margin-bottom: 20px;
 }
 
 .recipes-table th,
 .recipes-table td {
-  padding: 12px;
+  padding: 10px;
+  border: 1px solid #ddd;
   text-align: left;
-  border-bottom: 1px solid #ddd;
 }
 
 .recipes-table th {
-  background-color: #f2f2f2;
-  font-weight: 600;
-  color: #333;
-}
-
-.recipes-table tr:hover {
-  background-color: #f9f9f9;
+  background-color: #f4f4f4;
+  font-weight: bold;
 }
 
 .thumbnail-image {
@@ -85,94 +81,146 @@
   height: 50px;
   object-fit: cover;
   cursor: pointer;
-  border-radius: 4px;
-  transition: transform 0.2s;
 }
 
-.thumbnail-image:hover {
-  transform: scale(1.1);
-}
-
-.overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.7);
-  z-index: 1000;
+.pagination {
   display: flex;
+  gap: 5px;
   justify-content: center;
-  align-items: center;
+}
+
+.pagination-button {
+  padding: 5px 10px;
+  border: 1px solid #ddd;
+  background-color: white;
+  cursor: pointer;
+}
+
+.pagination-button.active {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.pagination-button:hover {
+  background-color: #f0f0f0;
 }
 
 .modal {
   position: relative;
-  background: #fff;
+  top: 50%;
+  left:50%;
+  transform: translate(-50%, -50%);
+  background-color: white;
   padding: 20px;
   border-radius: 8px;
   max-width: 600px;
   width: 90%;
-  max-height: 80vh;
-  overflow-y: auto;
-  z-index: 1001;
+  outline: none;
+   max-height: 80vh; /* Limit modal height to 80% of viewport height */
+  overflow-y: auto; 
+}
+
+.overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
 }
 
 .modal-content {
-  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
 }
 
-.modal-image {
+.modal-image,
+.modal-content img {
   max-width: 100%;
-  max-height: 400px;
-  margin: 10px 0;
-  border-radius: 4px;
+  height: auto;
+  margin-bottom: 10px;
 }
 
-.close-button {
-  padding: 10px 20px;
-  margin: 5px;
+.close-button,
+.modal-buttons button {
+  padding: 8px 16px;
   border: none;
   border-radius: 4px;
   cursor: pointer;
+}
+
+.close-button {
   background-color: #f44336;
   color: white;
-  transition: background-color 0.3s;
+  align-self: flex-end;
 }
 
-.close-button:hover {
-  background-color: #d32f2f;
-}
-
-.error-message {
-  color: #f44336;
-  margin: 10px 0;
-}
-
-/* RecipesScreen.css */
-/* ... other styles ... */
-
-.pagination {
+.modal-buttons {
   display: flex;
-  justify-content: center;
-  margin-top: 20px;
+  gap: 10px;
+  justify-content: flex-end;
 }
 
-.pagination-button {
-  padding: 8px 12px;
-  margin: 0 5px;
-  border: 1px solid #ccc;
-  background-color: white;
-  cursor: pointer;
+.modal-buttons button:first-child {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.modal-buttons button:last-child {
+  background-color: #f44336;
+  color: white;
+}
+
+.modal-buttons button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+.form-group input,
+.form-group select {
+  padding: 8px;
+  border: 1px solid #ddd;
   border-radius: 4px;
 }
 
-.pagination-button.active {
-  background-color: #007bff; /* Example active color */
-  color: white;
-  border-color: #007bff;
+.form-group input[type="file"] {
+  padding: 5px 0;
 }
 
-.pagination-button:hover:not(.active) {
+.progress-bar {
+  width: 100%;
+  height: 20px;
   background-color: #f0f0f0;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-top: 5px;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background-color: #4CAF50;
+  transition: width 0.3s ease;
+}
+
+.loading-indicator {
+  text-align: center;
+  font-size: 18px;
+  color: #4CAF50;
 }
