@@ -85,11 +85,18 @@
   padding: 15px;
   background: #f9f9f9;
   border-radius: 4px;
-  margin: 10px 0;
+  margin: 20px 0;
+  display: flex;
+  gap:5px;
+  box-shadow: #333;
+  border-radius: 5px;
 }
 
 .daily-plan {
-  margin-bottom: 15px;
+  margin: 15px;
+  background-color: #efeded;
+  padding:20px
+
 }
 
 .daily-plan h4 {

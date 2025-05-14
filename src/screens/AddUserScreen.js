@@ -1,70 +1,32 @@
 import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { db, storage } from '../firebase';
+import { useNavigate } from 'react-router-dom';
+import { db } from '../firebase';
 import { collection, addDoc } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import TopBar from '../components/topBar';
 import SideBar from '../components/SideBar';
 import './AddUserScreen.css';
 
 function AddUserScreen() {
   const navigate = useNavigate();
-  const location = useLocation();
-  const { setUsers } = location.state || {};
-
   const [formData, setFormData] = useState({
-    fullName: '',
-    phone: '',
     email: '',
-    newPassword: '',
-    confirmPassword: '',
-    image: null,
+    name: '',
+    profileCompleted: false,
   });
   const [error, setError] = useState(null);
-  const [imagePreview, setImagePreview] = useState(null);
 
   const handleInputChange = (e) => {
-    const { name, value, files } = e.target;
-    if (name === 'image') {
-      const file = files[0];
-      setFormData({ ...formData, image: file });
-      if (file) {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          setImagePreview(reader.result);
-        };
-        reader.readAsDataURL(file);
-      } else {
-        setImagePreview(null);
-      }
-    } else {
-      setFormData({ ...formData, [name]: value });
-    }
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
   };
 
   const validateForm = () => {
-    if (!formData.fullName || !formData.phone || !formData.email || !formData.newPassword || !formData.confirmPassword) {
-      setError('All fields are required.');
+    if (!formData.email || !formData.name) {
+      setError('Email and name are required.');
       return false;
     }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       setError('Please enter a valid email address.');
-      return false;
-    }
-    if (!/^\+\d{1,4}\s\d{3}\s\d{3}\s\d{4}$/.test(formData.phone)) {
-      setError('Please enter a valid phone number (e.g., +92 323 385 3454).');
-      return false;
-    }
-    if (formData.newPassword.length < 6) {
-      setError('Password must be at least 6 characters long.');
-      return false;
-    }
-    if (formData.newPassword !== formData.confirmPassword) {
-      setError('Passwords do not match.');
-      return false;
-    }
-    if (!formData.image) {
-      setError('Please upload an image.');
       return false;
     }
     return true;
@@ -79,29 +41,19 @@ function AddUserScreen() {
     }
 
     try {
-      // Upload image to Firebase Storage
-      const imageRef = ref(storage, `user_images/${Date.now()}_${formData.image.name}`);
-      await uploadBytes(imageRef, formData.image);
-      const imageUrl = await getDownloadURL(imageRef);
-
       // Prepare user data
       const userData = {
-        fullName: formData.fullName,
-        phone: formData.phone,
         email: formData.email,
-        password: formData.newPassword, // Note: Storing passwords in Firestore is not recommended in production; use Firebase Authentication instead
-        imageUrl: imageUrl,
+        name: formData.name,
+        profileCompleted: formData.profileCompleted,
+        workoutAssigned: false,
+        dietPlanAssigned: false,
         createdAt: new Date().toISOString(),
       };
 
       // Add user to Firestore
       const docRef = await addDoc(collection(db, 'users'), userData);
       console.log('User added to Firestore:', docRef.id);
-
-      // Update local state (for immediate UI update)
-      if (setUsers) {
-        setUsers((prevUsers) => [...prevUsers, { id: docRef.id, ...userData }]);
-      }
 
       // Navigate back to dashboard
       navigate('/dashboard');
@@ -135,24 +87,13 @@ function AddUserScreen() {
               <div className="form-section basic-info">
                 <h3>Basic Information</h3>
                 <div className="form-group">
-                  <label>Full Name</label>
+                  <label>Name</label>
                   <input
                     type="text"
-                    name="fullName"
-                    value={formData.fullName}
+                    name="name"
+                    value={formData.name}
                     onChange={handleInputChange}
-                    placeholder="Michael"
-                    required
-                  />
-                </div>
-                <div className="form-group">
-                  <label>Phone (Compulsory)</label>
-                  <input
-                    type="tel"
-                    name="phone"
-                    value={formData.phone}
-                    onChange={handleInputChange}
-                    placeholder="+92 323 385 3454"
+                    placeholder="XYZ"
                     required
                   />
                 </div>
@@ -163,47 +104,7 @@ function AddUserScreen() {
                     name="email"
                     value={formData.email}
                     onChange={handleInputChange}
-                    placeholder="loremipsum@gmail.com"
-                    required
-                  />
-                </div>
-                <div className="form-group">
-                  <label>Profile Image</label>
-                  <input
-                    type="file"
-                    name="image"
-                    accept="image/*"
-                    onChange={handleInputChange}
-                    required
-                  />
-                  {imagePreview && (
-                    <div className="image-preview">
-                      <img src={imagePreview} alt="Preview" />
-                    </div>
-                  )}
-                </div>
-              </div>
-              <div className="form-section create-password">
-                <h3>Create Password</h3>
-                <div className="form-group">
-                  <label>New Password</label>
-                  <input
-                    type="password"
-                    name="newPassword"
-                    value={formData.newPassword}
-                    onChange={handleInputChange}
-                    placeholder="Enter new password"
-                    required
-                  />
-                </div>
-                <div className="form-group">
-                  <label>Confirm Password</label>
-                  <input
-                    type="password"
-                    name="confirmPassword"
-                    value={formData.confirmPassword}
-                    onChange={handleInputChange}
-                    placeholder="Confirm password"
+                    placeholder="xyz@gmail.com"
                     required
                   />
                 </div>

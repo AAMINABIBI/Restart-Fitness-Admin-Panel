@@ -1,47 +1,70 @@
 import React from 'react';
-import { FaEye, FaTrash } from 'react-icons/fa';
+import { db } from '../firebase';
+import { doc, updateDoc } from 'firebase/firestore';
 import './UserTable.css';
 
-function UserTable() {
-  const users = [
-    { id: 1, name: 'John', gender: 'Female', email: 'john@gmail.com' },
-    { id: 2, name: 'Selena', gender: 'Female', email: 'john@gmail.com' },
-  ];
+function UserTable({ users, setUsers }) {
+  const toggleAssignment = async (userId, field) => {
+    try {
+      const userDocRef = doc(db, 'users', userId);
+      const user = users.find((u) => u.id === userId);
+      const newValue = !user[field];
+
+      // Update Firestore
+      await updateDoc(userDocRef, { [field]: newValue });
+
+      // Update local state for immediate UI update
+      setUsers((prevUsers) =>
+        prevUsers.map((u) =>
+          u.id === userId ? { ...u, [field]: newValue } : u
+        )
+      );
+    } catch (error) {
+      console.error(`Error toggling ${field}:`, error);
+    }
+  };
 
   return (
-    <table className="users-table">
-      <thead>
-        <tr>
-          <th>SL</th>
-          <th>NAME</th>
-          <th>GENDER</th>
-          <th>EMAIL</th>
-          <th>PASSWORD</th>
-          <th>ACTIONS</th>
-        </tr>
-      </thead>
-      <tbody>
-        {users.map((user) => (
-          <tr key={user.id}>
-            <td>{user.id}</td>
-            <td>{user.name}</td>
-            <td>{user.gender}</td>
-            <td>{user.email}</td>
-            <td>
-              <button className="change-password-button">CHANGE</button>
-            </td>
-            <td className="actions-column">
-              <button className="action-button view-button">
-                <FaEye />
-              </button>
-              <button className="action-button delete-button">
-                <FaTrash />
-              </button>
-            </td>
+    <div className="user-table-container">
+      <table className="user-table">
+        <thead>
+          <tr>
+            <th>S.No</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Profile Completed</th>
+            <th>Workout</th>
+            <th>Diet Plan</th>
           </tr>
-        ))}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {users.map((user, index) => (
+            <tr key={user.id}>
+              <td>{index + 1}</td>
+              <td>{user.name}</td>
+              <td>{user.email}</td>
+              <td>{user.profileCompleted ? 'Yes' : 'No'}</td>
+              <td>
+                <button
+                  className={`assignment-button ${user.workoutAssigned ? 'assigned' : 'not-assigned'}`}
+                  onClick={() => toggleAssignment(user.id, 'workoutAssigned')}
+                >
+                  {user.workoutAssigned ? 'Assigned' : 'Not Assigned'}
+                </button>
+              </td>
+              <td>
+                <button
+                  className={`assignment-button ${user.dietPlanAssigned ? 'assigned' : 'not-assigned'}`}
+                  onClick={() => toggleAssignment(user.id, 'dietPlanAssigned')}
+                >
+                  {user.dietPlanAssigned ? 'Assigned' : 'Not Assigned'}
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }
 
