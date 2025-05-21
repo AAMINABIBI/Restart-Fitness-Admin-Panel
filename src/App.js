@@ -8,6 +8,7 @@ const RegisterAdminScreen = lazy(() => import('./screens/RegisterAdminScreen'));
 const UserScreen = lazy(() => import('./screens/users'));
 const AddUserScreen = lazy(() => import('./screens/AddUserScreen'));
 const LevelsScreen = lazy(() => import('./screens/LevelsScreen'));
+const LevelBadgesScreen = lazy(() => import('./screens/LevelBadgesScreen'));
 const WorkoutsScreen = lazy(() => import('./screens/workouts'));
 const AddWorkoutScreen = lazy(() => import('./screens/AddWorkoutScreen'));
 const PopularWorkoutsScreen = lazy(() => import('./screens/PopularWorkoutsScreen'));
@@ -49,6 +50,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <LevelsScreen />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/level-badges"
+            element={
+              <ProtectedRoute>
+                <LevelBadgesScreen />
               </ProtectedRoute>
             }
           />

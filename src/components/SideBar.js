@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { FaSearch, FaUsers, FaLevelUpAlt, FaDumbbell, FaUtensils, FaBook, FaCalendarWeek, FaTrophy, FaComment, FaFire, FaBowlFood } from 'react-icons/fa';
+import { FaSearch, FaUsers, FaLevelUpAlt, FaDumbbell, FaUtensils, FaBook, FaCalendarWeek, FaTrophy, FaComment, FaFire } from 'react-icons/fa';
 import './SideBar.css';
 import logo from '../assets/logo.png';
 
@@ -26,30 +26,32 @@ function SideBar() {
           <FaLevelUpAlt className="nav-icon" />
           Levels
         </NavLink>
-        <div className="nav-group">
-
-          <NavLink to="/workouts/add" className={({ isActive }) => `sub-link ${isActive ? 'active' : ''}`}>
-            <span className="dot">•</span> Workouts
-          </NavLink>
-          <NavLink to="/diet-plan" className={({ isActive }) => `sub-link ${isActive ? 'active' : ''}`}>
-            <span className="dot">•</span> Diet Plan
-          </NavLink>
-
-          <NavLink to="/exams" className={({ isActive }) => `sub-link ${isActive ? 'active' : ''}`}>
-            <span className="dot">•</span> Exams
-          </NavLink>
-        </div>
+        <NavLink to="/level-badges" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+          <FaLevelUpAlt className="nav-icon" />
+          Level Badges
+        </NavLink>
+        <NavLink to="/workouts" className={({ isActive }) => `nav-link ${isActive || window.location.pathname === '/workouts/add' ? 'active' : ''}`}>
+          <FaDumbbell className="nav-icon" />
+          Workouts
+        </NavLink>
+        <NavLink to="/diet-plan" className={({ isActive }) => `nav-link ${isActive || window.location.pathname === '/diet-plan/add' ? 'active' : ''}`}>
+          <FaUtensils className="nav-icon" />
+          Diet Plan
+        </NavLink>
+        <NavLink to="/exams" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+          <FaBook className="nav-icon" />
+          Exams
+        </NavLink>
         <NavLink to="/weekly-challenges" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
           <FaCalendarWeek className="nav-icon" />
           Weekly Challenges
         </NavLink>
-        <NavLink to="/popular-workouts" className={({ isActive }) => `sub-link ${isActive ? 'active' : ''}`}>
-          <FaCalendarWeek className="nav-icon" />
+        <NavLink to="/popular-workouts" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+          <FaFire className="nav-icon" />
           Popular Workouts
         </NavLink>
-
-        <NavLink to="/recipes" className={({ isActive }) => `sub-link ${isActive ? 'active' : ''}`}>
-          <FaCalendarWeek className="nav-icon" />
+        <NavLink to="/recipes" className={({ isActive }) => `nav-link ${isActive || window.location.pathname === '/recipes/add' ? 'active' : ''}`}>
+          <FaUtensils className="nav-icon" />
           Recipes
         </NavLink>
         <NavLink to="/winners" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
