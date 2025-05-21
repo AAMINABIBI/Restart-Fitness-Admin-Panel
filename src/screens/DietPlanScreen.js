@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db, storage } from '../firebase';
-import { collection, getDocs, doc, getDoc, updateDoc, ref } from 'firebase/firestore';
-import { ref as storageRef, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
+import { collection, getDocs, doc, getDoc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { ref as storageRef, uploadBytesResumable, getDownloadURL, deleteObject } from 'firebase/storage';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css'; // Import toast styles
 import Modal from 'react-modal';
 import TopBar from '../components/topBar';
 import SideBar from '../components/SideBar';
 import './DietPlanScreen.css';
-import { FaEdit } from "react-icons/fa";
+import { FaEdit, FaTrash } from "react-icons/fa";
 
 Modal.setAppElement('#root');
 
@@ -15,7 +17,6 @@ function DietPlanScreen() {
   const navigate = useNavigate();
   const [dietPlans, setDietPlans] = useState([]);
   const [recipes, setRecipes] = useState([]); // To populate recipe selection
-  const [error, setError] = useState(null);
   const [expandedPlan, setExpandedPlan] = useState(null); // Track which plan's meals are expanded
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
@@ -34,7 +35,7 @@ function DietPlanScreen() {
         setDietPlans(dietPlansList);
       } catch (err) {
         console.error('Error fetching diet plans:', err.message);
-        setError('Failed to load diet plans. Please try again later.');
+        toast.error('Failed to load diet plans. Please try again later.', { autoClose: 3000 });
       }
     };
 
@@ -45,7 +46,7 @@ function DietPlanScreen() {
         setRecipes(recipesList);
       } catch (err) {
         console.error('Error fetching recipes:', err.message);
-        setError('Failed to load recipes. Please try again later.');
+        toast.error('Failed to load recipes. Please try again later.', { autoClose: 3000 });
       }
     };
 
@@ -76,11 +77,11 @@ function DietPlanScreen() {
         planData.meals = planData.meals || []; // Ensure meals is an array
         setEditFormData(planData);
       } else {
-        setError('Diet plan not found.');
+        toast.error('Diet plan not found.', { autoClose: 3000 });
       }
     } catch (err) {
       console.error('Error fetching diet plan for edit:', err.message);
-      setError('Failed to load diet plan details.');
+      toast.error('Failed to load diet plan details.', { autoClose: 3000 });
     }
     setLoading(false);
     setEditModalOpen(true);
@@ -91,7 +92,6 @@ function DietPlanScreen() {
     setEditFormData(null);
     setImageFile(null);
     setUploadProgress(0);
-    setError(null);
   };
 
   const handleEditInputChange = (e) => {
@@ -123,7 +123,12 @@ function DietPlanScreen() {
     if (e.target.files[0]) {
       const file = e.target.files[0];
       if (file.size > 5 * 1024 * 1024) { // 5MB limit
-        setError('File size must be less than 5MB.');
+        toast.error('File size must be less than 5MB.', { autoClose: 3000 });
+        return;
+      }
+      const allowedImageTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+      if (!allowedImageTypes.includes(file.type)) {
+        toast.error('Please upload a valid image file (JPEG, PNG, JPG).', { autoClose: 3000 });
         return;
       }
       setImageFile(file);
@@ -137,33 +142,45 @@ function DietPlanScreen() {
     try {
       let newThumbnailURL = editFormData.thumbnailURL || '';
       if (imageFile) {
+        // Delete the old thumbnail if it exists
+        if (editFormData.thumbnailURL) {
+          const oldThumbnailRef = storageRef(storage, editFormData.thumbnailURL);
+          await deleteObject(oldThumbnailRef).catch(err => {
+            console.warn('Failed to delete old thumbnail:', err.message);
+          });
+        }
+
         const storageReference = storageRef(storage, `dietPlans/thumbs/${editFormData.id}/${imageFile.name}`);
         const uploadTask = uploadBytesResumable(storageReference, imageFile);
 
-        uploadTask.on(
-          'state_changed',
-          (snapshot) => {
-            const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-            setUploadProgress(progress);
-          },
-          (error) => {
-            console.error('Upload failed:', error.message);
-            setError('Failed to upload image.');
-          },
-          async () => {
-            newThumbnailURL = await getDownloadURL(uploadTask.snapshot.ref);
-            await updateDietPlan(newThumbnailURL);
-          }
-        );
-        await uploadTask; // Wait for upload to complete
-      } else {
-        await updateDietPlan(newThumbnailURL);
+        await new Promise((resolve, reject) => {
+          uploadTask.on(
+            'state_changed',
+            (snapshot) => {
+              const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+              setUploadProgress(progress);
+            },
+            (error) => {
+              console.error('Upload failed:', error.message);
+              toast.error('Failed to upload image.', { autoClose: 3000 });
+              reject(error);
+            },
+            async () => {
+              newThumbnailURL = await getDownloadURL(uploadTask.snapshot.ref);
+              resolve();
+            }
+          );
+        });
       }
+
+      await updateDietPlan(newThumbnailURL);
+      toast.success('Diet plan updated successfully!', { autoClose: 3000 });
     } catch (err) {
       console.error('Error saving diet plan:', err.message);
-      setError('Failed to save diet plan. Please try again.');
+      toast.error('Failed to save diet plan. Please try again.', { autoClose: 3000 });
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const updateDietPlan = async (newThumbnailURL) => {
@@ -181,6 +198,30 @@ function DietPlanScreen() {
     });
     setDietPlans(dietPlans.map(p => p.id === editFormData.id ? { ...editFormData, thumbnailURL: newThumbnailURL } : p));
     closeEditModal();
+  };
+
+  const handleDelete = async (planId, thumbnailURL) => {
+    if (!window.confirm('Are you sure you want to delete this diet plan?')) return;
+
+    try {
+      // Delete the thumbnail from Firebase Storage if it exists
+      if (thumbnailURL) {
+        const thumbnailRef = storageRef(storage, thumbnailURL);
+        await deleteObject(thumbnailRef).catch(err => {
+          console.warn('Failed to delete thumbnail:', err.message);
+        });
+      }
+
+      // Delete the diet plan from Firestore
+      await deleteDoc(doc(db, 'dietPlans', planId));
+
+      // Update the frontend state
+      setDietPlans(dietPlans.filter(plan => plan.id !== planId));
+      toast.success('Diet plan deleted successfully!', { autoClose: 3000 });
+    } catch (err) {
+      console.error('Error deleting diet plan:', err.message);
+      toast.error('Failed to delete diet plan. Please try again.', { autoClose: 3000 });
+    }
   };
 
   const filteredDietPlans = dietPlans.filter(plan =>
@@ -233,7 +274,6 @@ function DietPlanScreen() {
               </button>
             </div>
           </div>
-          {error && <p className="error-message">{error}</p>}
           {filteredDietPlans.length === 0 ? (
             <p>No diet plans found.</p>
           ) : (
@@ -252,6 +292,7 @@ function DietPlanScreen() {
                     <th>Tags</th>
                     <th>Meals</th>
                     <th>Edit</th>
+                    <th>Delete</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -276,12 +317,18 @@ function DietPlanScreen() {
                           </button>
                         </td>
                         <td>
-                          <FaEdit onClick={() => openEditModal(plan)} />
+                          <FaEdit onClick={() => openEditModal(plan)} className="edit-icon" />
+                        </td>
+                        <td>
+                          <FaTrash
+                            onClick={() => handleDelete(plan.id, plan.thumbnailURL)}
+                            className="delete-icon"
+                          />
                         </td>
                       </tr>
                       {expandedPlan === plan.id && (
                         <tr>
-                          <td colSpan="10">
+                          <td colSpan="12">
                             <div className="meals-dropdown">
                               {plan.meals.map(dailyPlan => (
                                 <div key={dailyPlan.day} className="daily-plan">
@@ -466,12 +513,22 @@ function DietPlanScreen() {
                 Cancel
               </button>
             </div>
-            {error && <p className="error-message">{error}</p>}
           </div>
         ) : (
           <p>No diet plan data available.</p>
         )}
       </Modal>
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+      />
     </div>
   );
 }

@@ -233,3 +233,25 @@
   font-size: 18px;
   color: #4CAF50;
 }
+
+.edit-icon, .delete-icon {
+  cursor: pointer;
+  font-size: 1.2rem;
+  margin: 0 5px;
+}
+
+.edit-icon {
+  color: #007bff; /* Blue for edit */
+}
+
+.edit-icon:hover {
+  color: #0056b3;
+}
+
+.delete-icon {
+  color: #dc3545; /* Red for delete */
+}
+
+.delete-icon:hover {
+  color: #a71d2a;
+}

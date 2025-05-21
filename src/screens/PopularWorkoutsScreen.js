@@ -1,21 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db, storage } from '../firebase';
-import { collection, getDocs, doc, getDoc, updateDoc, ref } from 'firebase/firestore';
-import { ref as storageRef, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
+import { collection, getDocs, doc, getDoc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { ref as storageRef, uploadBytesResumable, getDownloadURL, deleteObject } from 'firebase/storage';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css'; // Import toast styles
 import Modal from 'react-modal';
 import TopBar from '../components/topBar';
 import SideBar from '../components/SideBar';
 import './PopularWorkoutsScreen.css';
-import { FaPlay } from "react-icons/fa";
-import { FaEdit } from "react-icons/fa";
+import { FaPlay, FaEdit, FaTrash } from "react-icons/fa";
 
 Modal.setAppElement('#root');
 
 function PopularWorkoutsScreen() {
   const navigate = useNavigate();
   const [workouts, setWorkouts] = useState([]);
-  const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [selectedWorkout, setSelectedWorkout] = useState(null);
@@ -38,7 +38,7 @@ function PopularWorkoutsScreen() {
         setWorkouts(workoutsList);
       } catch (err) {
         console.error('Error fetching workouts:', err.message);
-        setError('Failed to load workouts. Please try again later.');
+        toast.error('Failed to load workouts. Please try again later.', { autoClose: 3000 });
       }
     };
     fetchWorkouts();
@@ -67,11 +67,11 @@ function PopularWorkoutsScreen() {
         workoutData.tags = Array.isArray(workoutData.tags) ? workoutData.tags : [];
         setEditFormData(workoutData);
       } else {
-        setError('Workout not found.');
+        toast.error('Workout not found.', { autoClose: 3000 });
       }
     } catch (err) {
       console.error('Error fetching workout for edit:', err.message);
-      setError('Failed to load workout details.');
+      toast.error('Failed to load workout details.', { autoClose: 3000 });
     }
     setLoading(false);
     setEditModalOpen(true);
@@ -84,7 +84,6 @@ function PopularWorkoutsScreen() {
     setVideoFile(null);
     setUploadProgress(0);
     setVideoUploadProgress(0);
-    setError(null);
   };
 
   const handleEditInputChange = (e) => {
@@ -106,7 +105,12 @@ function PopularWorkoutsScreen() {
     if (e.target.files[0]) {
       const file = e.target.files[0];
       if (file.size > 5 * 1024 * 1024) { // 5MB limit
-        setError('Image file size must be less than 5MB.');
+        toast.error('Image file size must be less than 5MB.', { autoClose: 3000 });
+        return;
+      }
+      const allowedImageTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+      if (!allowedImageTypes.includes(file.type)) {
+        toast.error('Please upload a valid image file (JPEG, PNG, JPG).', { autoClose: 3000 });
         return;
       }
       setImageFile(file);
@@ -117,7 +121,12 @@ function PopularWorkoutsScreen() {
     if (e.target.files[0]) {
       const file = e.target.files[0];
       if (file.size > 50 * 1024 * 1024) { // 50MB limit
-        setError('Video file size must be less than 50MB.');
+        toast.error('Video file size must be less than 50MB.', { autoClose: 3000 });
+        return;
+      }
+      const allowedVideoTypes = ['video/mp4', 'video/webm', 'video/ogg'];
+      if (!allowedVideoTypes.includes(file.type)) {
+        toast.error('Please upload a valid video file (MP4, WebM, Ogg).', { autoClose: 3000 });
         return;
       }
       setVideoFile(file);
@@ -129,58 +138,83 @@ function PopularWorkoutsScreen() {
 
     setLoading(true);
     try {
-      let newThumbnailURL = editFormData.thumbnailURL;
-      let newVideoURL = editFormData.videoURL;
+      let newThumbnailURL = editFormData.thumbnailURL || '';
+      let newVideoURL = editFormData.videoURL || '';
 
       if (imageFile) {
+        // Delete the old thumbnail if it exists
+        if (editFormData.thumbnailURL) {
+          const oldThumbnailRef = storageRef(storage, editFormData.thumbnailURL);
+          await deleteObject(oldThumbnailRef).catch(err => {
+            console.warn('Failed to delete old thumbnail:', err.message);
+          });
+        }
+
         const storageReference = storageRef(storage, `workouts/thumbs/${editFormData.id}/${imageFile.name}`);
         const uploadTask = uploadBytesResumable(storageReference, imageFile);
 
-        uploadTask.on(
-          'state_changed',
-          (snapshot) => {
-            const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-            setUploadProgress(progress);
-          },
-          (error) => {
-            console.error('Image upload failed:', error.message);
-            setError('Failed to upload image.');
-          },
-          async () => {
-            newThumbnailURL = await getDownloadURL(uploadTask.snapshot.ref);
-          }
-        );
-        await uploadTask;
+        await new Promise((resolve, reject) => {
+          uploadTask.on(
+            'state_changed',
+            (snapshot) => {
+              const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+              setUploadProgress(progress);
+            },
+            (error) => {
+              console.error('Image upload failed:', error.message);
+              toast.error('Failed to upload image.', { autoClose: 3000 });
+              reject(error);
+            },
+            async () => {
+              newThumbnailURL = await getDownloadURL(uploadTask.snapshot.ref);
+              resolve();
+            }
+          );
+        });
       }
 
       if (videoFile) {
+        // Delete the old video if it exists
+        if (editFormData.videoURL) {
+          const oldVideoRef = storageRef(storage, editFormData.videoURL);
+          await deleteObject(oldVideoRef).catch(err => {
+            console.warn('Failed to delete old video:', err.message);
+          });
+        }
+
         const storageReference = storageRef(storage, `workouts/videos/${editFormData.id}/${videoFile.name}`);
         const uploadTask = uploadBytesResumable(storageReference, videoFile);
 
-        uploadTask.on(
-          'state_changed',
-          (snapshot) => {
-            const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-            setVideoUploadProgress(progress);
-          },
-          (error) => {
-            console.error('Video upload failed:', error.message);
-            setError('Failed to upload video.');
-          },
-          async () => {
-            newVideoURL = await getDownloadURL(uploadTask.snapshot.ref);
-            await updateWorkout(newThumbnailURL, newVideoURL);
-          }
-        );
-        await uploadTask;
+        await new Promise((resolve, reject) => {
+          uploadTask.on(
+            'state_changed',
+            (snapshot) => {
+              const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+              setVideoUploadProgress(progress);
+            },
+            (error) => {
+              console.error('Video upload failed:', error.message);
+              toast.error('Failed to upload video.', { autoClose: 3000 });
+              reject(error);
+            },
+            async () => {
+              newVideoURL = await getDownloadURL(uploadTask.snapshot.ref);
+              await updateWorkout(newThumbnailURL, newVideoURL);
+              resolve();
+            }
+          );
+        });
       } else {
         await updateWorkout(newThumbnailURL, newVideoURL);
       }
+
+      toast.success('Workout updated successfully!', { autoClose: 3000 });
     } catch (err) {
       console.error('Error saving workout:', err.message);
-      setError('Failed to save workout. Please try again.');
+      toast.error('Failed to save workout. Please try again.', { autoClose: 3000 });
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const updateWorkout = async (newThumbnailURL, newVideoURL) => {
@@ -197,6 +231,38 @@ function PopularWorkoutsScreen() {
     });
     setWorkouts(workouts.map(w => w.id === editFormData.id ? { ...editFormData, thumbnailURL: newThumbnailURL, videoURL: newVideoURL } : w));
     closeEditModal();
+  };
+
+  const handleDelete = async (workoutId, thumbnailURL, videoURL) => {
+    if (!window.confirm('Are you sure you want to delete this workout?')) return;
+
+    try {
+      // Delete the thumbnail from Firebase Storage if it exists
+      if (thumbnailURL) {
+        const thumbnailRef = storageRef(storage, thumbnailURL);
+        await deleteObject(thumbnailRef).catch(err => {
+          console.warn('Failed to delete thumbnail:', err.message);
+        });
+      }
+
+      // Delete the video from Firebase Storage if it exists
+      if (videoURL) {
+        const videoRef = storageRef(storage, videoURL);
+        await deleteObject(videoRef).catch(err => {
+          console.warn('Failed to delete video:', err.message);
+        });
+      }
+
+      // Delete the workout from Firestore
+      await deleteDoc(doc(db, 'workouts', workoutId));
+
+      // Update the frontend state
+      setWorkouts(workouts.filter(workout => workout.id !== workoutId));
+      toast.success('Workout deleted successfully!', { autoClose: 3000 });
+    } catch (err) {
+      console.error('Error deleting workout:', err.message);
+      toast.error('Failed to delete workout. Please try again.', { autoClose: 3000 });
+    }
   };
 
   const handleSearch = (e) => {
@@ -255,7 +321,6 @@ function PopularWorkoutsScreen() {
               </button>
             </div>
           </div>
-          {error && <p className="error-message">{error}</p>}
           {filteredWorkouts.length === 0 ? (
             <p>No workouts found.</p>
           ) : (
@@ -274,6 +339,7 @@ function PopularWorkoutsScreen() {
                     <th>Image</th>
                     <th>Video</th>
                     <th>Edit</th>
+                    <th>Delete</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -311,7 +377,13 @@ function PopularWorkoutsScreen() {
                         )}
                       </td>
                       <td>
-                        <FaEdit onClick={() => openEditModal(workout)} />
+                        <FaEdit onClick={() => openEditModal(workout)} className="edit-icon" />
+                      </td>
+                      <td>
+                        <FaTrash
+                          onClick={() => handleDelete(workout.id, workout.thumbnailURL, workout.videoURL)}
+                          className="delete-icon"
+                        />
                       </td>
                     </tr>
                   ))}
@@ -427,15 +499,6 @@ function PopularWorkoutsScreen() {
                 />
               </div>
               <div className="form-group">
-                <label>Video URL</label>
-                <input
-                  type="text"
-                  name="videoURL"
-                  value={editFormData.videoURL || ''}
-                  onChange={handleEditInputChange}
-                />
-              </div>
-              <div className="form-group">
                 <label>Current Thumbnail</label>
                 {editFormData.thumbnailURL && (
                   <img
@@ -495,12 +558,22 @@ function PopularWorkoutsScreen() {
                 Cancel
               </button>
             </div>
-            {error && <p className="error-message">{error}</p>}
           </div>
         ) : (
           <p>No workout data available.</p>
         )}
       </Modal>
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+      />
     </div>
   );
 }

@@ -1,20 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db, storage } from '../firebase';
-import { collection, getDocs, doc, getDoc, updateDoc, ref } from 'firebase/firestore';
-import { ref as storageRef, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
+import { collection, getDocs, doc, getDoc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { ref as storageRef, uploadBytesResumable, getDownloadURL, deleteObject } from 'firebase/storage';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css'; // Import toast styles
 import Modal from 'react-modal';
 import TopBar from '../components/topBar';
 import SideBar from '../components/SideBar';
 import './RecipesScreen.css';
-import { FaEdit } from "react-icons/fa";
+import { FaEdit, FaTrash } from "react-icons/fa";
 
 Modal.setAppElement('#root');
 
 function RecipesScreen() {
   const navigate = useNavigate();
   const [recipes, setRecipes] = useState([]);
-  const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [selectedRecipe, setSelectedRecipe] = useState(null);
@@ -35,7 +36,7 @@ function RecipesScreen() {
         setRecipes(recipesList);
       } catch (err) {
         console.error('Error fetching recipes:', err.message);
-        setError('Failed to load recipes. Please try again later.');
+        toast.error('Failed to load recipes. Please try again later.', { autoClose: 3000 });
       }
     };
     fetchRecipes();
@@ -64,11 +65,11 @@ function RecipesScreen() {
         recipeData.tags = Array.isArray(recipeData.tags) ? recipeData.tags : [];
         setEditFormData(recipeData);
       } else {
-        setError('Recipe not found.');
+        toast.error('Recipe not found.', { autoClose: 3000 });
       }
     } catch (err) {
       console.error('Error fetching recipe for edit:', err.message);
-      setError('Failed to load recipe details.');
+      toast.error('Failed to load recipe details.', { autoClose: 3000 });
     }
     setLoading(false);
     setEditModalOpen(true);
@@ -79,7 +80,6 @@ function RecipesScreen() {
     setEditFormData(null);
     setImageFile(null);
     setUploadProgress(0);
-    setError(null);
   };
 
   const handleEditInputChange = (e) => {
@@ -107,7 +107,12 @@ function RecipesScreen() {
     if (e.target.files[0]) {
       const file = e.target.files[0];
       if (file.size > 5 * 1024 * 1024) { // 5MB limit
-        setError('File size must be less than 5MB.');
+        toast.error('File size must be less than 5MB.', { autoClose: 3000 });
+        return;
+      }
+      const allowedImageTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+      if (!allowedImageTypes.includes(file.type)) {
+        toast.error('Please upload a valid image file (JPEG, PNG, JPG).', { autoClose: 3000 });
         return;
       }
       setImageFile(file);
@@ -119,34 +124,47 @@ function RecipesScreen() {
 
     setLoading(true);
     try {
-      let newThumbnailUrl = editFormData.thumbnailUrl;
+      let newThumbnailUrl = editFormData.thumbnailUrl || '';
       if (imageFile) {
+        // Delete the old thumbnail if it exists
+        if (editFormData.thumbnailUrl) {
+          const oldThumbnailRef = storageRef(storage, editFormData.thumbnailUrl);
+          await deleteObject(oldThumbnailRef).catch(err => {
+            console.warn('Failed to delete old thumbnail:', err.message);
+          });
+        }
+
         const storageReference = storageRef(storage, `recipes/thumbs/${editFormData.id}/${imageFile.name}`);
         const uploadTask = uploadBytesResumable(storageReference, imageFile);
 
-        uploadTask.on(
-          'state_changed',
-          (snapshot) => {
-            const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-            setUploadProgress(progress);
-          },
-          (error) => {
-            console.error('Upload failed:', error.message);
-            setError('Failed to upload image.');
-          },
-          async () => {
-            newThumbnailUrl = await getDownloadURL(uploadTask.snapshot.ref);
-            await updateRecipe(newThumbnailUrl);
-          }
-        );
-      } else {
-        await updateRecipe(newThumbnailUrl);
+        await new Promise((resolve, reject) => {
+          uploadTask.on(
+            'state_changed',
+            (snapshot) => {
+              const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+              setUploadProgress(progress);
+            },
+            (error) => {
+              console.error('Upload failed:', error.message);
+              toast.error('Failed to upload image.', { autoClose: 3000 });
+              reject(error);
+            },
+            async () => {
+              newThumbnailUrl = await getDownloadURL(uploadTask.snapshot.ref);
+              resolve();
+            }
+          );
+        });
       }
+
+      await updateRecipe(newThumbnailUrl);
+      toast.success('Recipe updated successfully!', { autoClose: 3000 });
     } catch (err) {
       console.error('Error saving recipe:', err.message);
-      setError('Failed to save recipe. Please try again.');
+      toast.error('Failed to save recipe. Please try again.', { autoClose: 3000 });
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const updateRecipe = async (newThumbnailUrl) => {
@@ -167,6 +185,30 @@ function RecipesScreen() {
     });
     setRecipes(recipes.map(r => r.id === editFormData.id ? { ...editFormData, thumbnailUrl: newThumbnailUrl } : r));
     closeEditModal();
+  };
+
+  const handleDelete = async (recipeId, thumbnailUrl) => {
+    if (!window.confirm('Are you sure you want to delete this recipe?')) return;
+
+    try {
+      // Delete the thumbnail from Firebase Storage if it exists
+      if (thumbnailUrl) {
+        const thumbnailRef = storageRef(storage, thumbnailUrl);
+        await deleteObject(thumbnailRef).catch(err => {
+          console.warn('Failed to delete thumbnail:', err.message);
+        });
+      }
+
+      // Delete the recipe from Firestore
+      await deleteDoc(doc(db, 'recipes', recipeId));
+
+      // Update the frontend state
+      setRecipes(recipes.filter(recipe => recipe.id !== recipeId));
+      toast.success('Recipe deleted successfully!', { autoClose: 3000 });
+    } catch (err) {
+      console.error('Error deleting recipe:', err.message);
+      toast.error('Failed to delete recipe. Please try again.', { autoClose: 3000 });
+    }
   };
 
   const handleSearch = (e) => {
@@ -225,7 +267,6 @@ function RecipesScreen() {
               </button>
             </div>
           </div>
-          {error && <p className="error-message">{error}</p>}
           {filteredRecipes.length === 0 ? (
             <p>No recipes found.</p>
           ) : (
@@ -244,6 +285,7 @@ function RecipesScreen() {
                     <th>Age Group</th>
                     <th>Thumbnail</th>
                     <th>Edit</th>
+                    <th>Delete</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -269,7 +311,13 @@ function RecipesScreen() {
                         )}
                       </td>
                       <td>
-                        <FaEdit onClick={() => openEditModal(recipe)} />
+                        <FaEdit onClick={() => openEditModal(recipe)} className="edit-icon" />
+                      </td>
+                      <td>
+                        <FaTrash
+                          onClick={() => handleDelete(recipe.id, recipe.thumbnailUrl)}
+                          className="delete-icon"
+                        />
                       </td>
                     </tr>
                   ))}
@@ -446,12 +494,22 @@ function RecipesScreen() {
                 Cancel
               </button>
             </div>
-            {error && <p className="error-message">{error}</p>}
           </div>
         ) : (
           <p>No recipe data available.</p>
         )}
       </Modal>
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+      />
     </div>
   );
 }
