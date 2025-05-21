@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { storage, auth, db } from '../firebase';
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { collection, addDoc } from 'firebase/firestore';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css'; // Import toast styles
 import TopBar from '../components/topBar';
 import SideBar from '../components/SideBar';
 import AddEquipmentModal from '../components/AddEquipmentModal';
@@ -29,7 +31,6 @@ function AddWorkoutScreen() {
   const [thumbnailFile, setThumbnailFile] = useState(null);
   const [isEquipmentModalOpen, setIsEquipmentModalOpen] = useState(false);
   const [isChapterModalOpen, setIsChapterModalOpen] = useState(false);
-  const [error, setError] = useState(null);
   const [videoPreview, setVideoPreview] = useState(null);
   const [thumbnailPreview, setThumbnailPreview] = useState(null);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -62,7 +63,6 @@ function AddWorkoutScreen() {
         setThumbnailPreview(null);
       }
     }
-    setError(null);
   };
 
   const handleTagsChange = (e) => {
@@ -72,17 +72,17 @@ function AddWorkoutScreen() {
 
   const validateVideo = () => {
     if (!videoFile) {
-      setError('Please upload a video.');
+      toast.error('Please upload a video.', { autoClose: 3000 });
       return false;
     }
     const allowedVideoTypes = ['video/mp4', 'video/mov', 'video/avi', 'video/webm'];
     if (!allowedVideoTypes.includes(videoFile.type)) {
-      setError('Please upload a valid video file (MP4, MOV, AVI, WebM).');
+      toast.error('Please upload a valid video file (MP4, MOV, AVI, WebM).', { autoClose: 3000 });
       return false;
     }
     const maxSizeInMB = 100;
     if (videoFile.size > maxSizeInMB * 1024 * 1024) {
-      setError(`Video file size must be less than ${maxSizeInMB}MB.`);
+      toast.error(`Video file size must be less than ${maxSizeInMB}MB.`, { autoClose: 3000 });
       return false;
     }
     return true;
@@ -90,17 +90,17 @@ function AddWorkoutScreen() {
 
   const validateThumbnail = () => {
     if (!thumbnailFile) {
-      setError('Please upload a thumbnail.');
+      toast.error('Please upload a thumbnail.', { autoClose: 3000 });
       return false;
     }
     const allowedImageTypes = ['image/jpeg', 'image/png', 'image/jpg'];
     if (!allowedImageTypes.includes(thumbnailFile.type)) {
-      setError('Please upload a valid image file (JPEG, PNG, JPG).');
+      toast.error('Please upload a valid image file (JPEG, PNG, JPG).', { autoClose: 3000 });
       return false;
     }
     const maxSizeInMB = 5;
     if (thumbnailFile.size > maxSizeInMB * 1024 * 1024) {
-      setError(`Thumbnail file size must be less than ${maxSizeInMB}MB.`);
+      toast.error(`Thumbnail file size must be less than ${maxSizeInMB}MB.`, { autoClose: 3000 });
       return false;
     }
     return true;
@@ -116,7 +116,10 @@ function AddWorkoutScreen() {
           uploadTask.on(
             'state_changed',
             null,
-            (error) => reject(error),
+            (error) => {
+              toast.error('Failed to upload equipment icon. Please try again.', { autoClose: 3000 });
+              reject(error);
+            },
             async () => {
               iconUrl = await getDownloadURL(uploadTask.snapshot.ref);
               resolve();
@@ -138,7 +141,7 @@ function AddWorkoutScreen() {
       console.log('Equipment added:', newEquipment);
     } catch (err) {
       console.error('Error uploading equipment icon:', err.message);
-      setError('Failed to upload equipment icon. Please try again.');
+      toast.error('Failed to upload equipment icon. Please try again.', { autoClose: 3000 });
     }
   };
 
@@ -157,7 +160,7 @@ function AddWorkoutScreen() {
   const handleCloseEquipmentModal = () => setIsEquipmentModalOpen(false);
 
   const handleOpenChapterModal = () => {
-    console.log('Opening Chapter Modal'); // Debug log
+    console.log('Opening Chapter Modal');
     setIsChapterModalOpen(true);
   };
   const handleCloseChapterModal = () => setIsChapterModalOpen(false);
@@ -182,7 +185,6 @@ function AddWorkoutScreen() {
     setThumbnailFile(null);
     setVideoPreview(null);
     setThumbnailPreview(null);
-    setError(null);
     setUploadProgress(0);
   };
 
@@ -190,7 +192,6 @@ function AddWorkoutScreen() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError(null);
     setUploadProgress(0);
 
     console.log('Current user:', auth.currentUser);
@@ -209,9 +210,9 @@ function AddWorkoutScreen() {
         (error) => {
           console.error('Error uploading video:', error.message);
           if (error.code === 'storage/unauthorized') {
-            setError('You do not have permission to upload videos.');
+            toast.error('You do not have permission to upload videos.', { autoClose: 3000 });
           } else {
-            setError('Failed to upload video.');
+            toast.error('Failed to upload video.', { autoClose: 3000 });
           }
           setUploadProgress(0);
         },
@@ -228,7 +229,7 @@ function AddWorkoutScreen() {
             },
             (error) => {
               console.error('Error uploading thumbnail:', error.message);
-              setError('Failed to upload thumbnail.');
+              toast.error('Failed to upload thumbnail.', { autoClose: 3000 });
               setUploadProgress(0);
             },
             async () => {
@@ -253,14 +254,19 @@ function AddWorkoutScreen() {
               console.log('Workout added to Firestore with ID:', docRef.id);
 
               setUploadProgress(0);
-              navigate('/workouts');
+              toast.success('Workout added successfully!', { autoClose: 3000 });
+
+              // Navigate back to workouts after a short delay to allow toast to be seen
+              setTimeout(() => {
+                navigate('/popular-workouts');
+              }, 3000);
             }
           );
         }
       );
     } catch (err) {
       console.error('Error:', err.message);
-      setError('An unexpected error occurred.');
+      toast.error('An unexpected error occurred.', { autoClose: 3000 });
       setUploadProgress(0);
     }
   };
@@ -291,7 +297,6 @@ function AddWorkoutScreen() {
             <button className="add-more-button" onClick={handleAddMore}>
               + Add More
             </button>
-            {error && <p className="error-message">{error}</p>}
             <form onSubmit={handleSubmit}>
               <div className="form-group">
                 <label>Workout Name</label>
@@ -379,7 +384,7 @@ function AddWorkoutScreen() {
                 <button
                   type="button"
                   className="add-chapter-button"
-                  onClick={handleOpenChapterModal} // Ensure this is correct
+                  onClick={handleOpenChapterModal}
                 >
                   + Add Chapter
                 </button>
@@ -491,6 +496,17 @@ function AddWorkoutScreen() {
         isOpen={isChapterModalOpen}
         onClose={handleCloseChapterModal}
         onAddChapter={handleAddChapter}
+      />
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
       />
     </div>
   );

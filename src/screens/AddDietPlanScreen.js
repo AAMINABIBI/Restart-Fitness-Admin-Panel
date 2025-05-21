@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../firebase';
 import { collection, getDocs, addDoc } from 'firebase/firestore';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css'; // Import toast styles
 import TopBar from '../components/topBar';
 import SideBar from '../components/SideBar';
 import './AddDietPlanScreen.css';
@@ -22,7 +24,6 @@ function AddDietPlanScreen() {
     meals: [],
   });
   const [recipes, setRecipes] = useState([]);
-  const [error, setError] = useState(null);
   const [currentDay, setCurrentDay] = useState(1);
   const [mealEntries, setMealEntries] = useState([
     { type: 'Breakfast', recipeId: '' },
@@ -39,7 +40,7 @@ function AddDietPlanScreen() {
         setRecipes(recipesList);
       } catch (err) {
         console.error('Error fetching recipes:', err.message);
-        setError('Failed to load recipes. Please try again later.');
+        toast.error('Failed to load recipes. Please try again later.', { autoClose: 3000 });
       }
     };
     fetchRecipes();
@@ -63,7 +64,7 @@ function AddDietPlanScreen() {
 
   const addDayMeals = () => {
     if (mealEntries.some(meal => !meal.recipeId)) {
-      setError('Please select a recipe for each meal type before adding the day.');
+      toast.error('Please select a recipe for each meal type before adding the day.', { autoClose: 3000 });
       return;
     }
     setFormData({
@@ -76,7 +77,6 @@ function AddDietPlanScreen() {
       { type: 'Lunch', recipeId: '' },
       { type: 'Dinner', recipeId: '' },
     ]);
-    setError(null);
   };
 
   const validateForm = () => {
@@ -91,11 +91,11 @@ function AddDietPlanScreen() {
       !formData.intensity ||
       formData.meals.length === 0
     ) {
-      setError('Please fill in all required fields and add at least one day of meals.');
+      toast.error('Please fill in all required fields and add at least one day of meals.', { autoClose: 3000 });
       return false;
     }
     if (formData.meals.length !== parseInt(formData.durationDays)) {
-      setError('Number of days with meals must match the duration of the diet plan.');
+      toast.error('Number of days with meals must match the duration of the diet plan.', { autoClose: 3000 });
       return false;
     }
     return true;
@@ -103,7 +103,6 @@ function AddDietPlanScreen() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError(null);
 
     if (!validateForm()) return;
 
@@ -127,11 +126,15 @@ function AddDietPlanScreen() {
       const docRef = await addDoc(collection(db, 'dietPlans'), dietPlanData);
       console.log('Diet Plan added to Firestore with ID:', docRef.id);
 
-      alert('Diet Plan added successfully!');
-      navigate('/diet-plan');
+      toast.success('Diet Plan added successfully!', { autoClose: 3000 });
+
+      // Navigate back to diet plans after a short delay to allow toast to be seen
+      setTimeout(() => {
+        navigate('/diet-plan');
+      }, 3000);
     } catch (err) {
       console.error('Error adding diet plan:', err.message);
-      setError('Failed to add diet plan. Please try again later.');
+      toast.error('Failed to add diet plan. Please try again later.', { autoClose: 3000 });
     }
   };
 
@@ -151,7 +154,6 @@ function AddDietPlanScreen() {
               Back to Diet Plans
             </button>
           </div>
-          {error && <p className="error-message">{error}</p>}
           <form onSubmit={handleSubmit}>
             <div className="form-section">
               <h3>Diet Plan Information</h3>
@@ -319,6 +321,17 @@ function AddDietPlanScreen() {
           </form>
         </div>
       </div>
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+      />
     </div>
   );
 }

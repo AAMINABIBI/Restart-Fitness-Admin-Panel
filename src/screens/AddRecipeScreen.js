@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { db, storage } from '../firebase';
 import { collection, addDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css'; // Import toast styles
 import TopBar from '../components/topBar';
 import SideBar from '../components/SideBar';
 import './AddRecipeScreen.css';
@@ -25,7 +27,6 @@ function AddRecipeScreen() {
   });
   const [thumbnailFile, setThumbnailFile] = useState(null);
   const [thumbnailPreview, setThumbnailPreview] = useState(null);
-  const [error, setError] = useState(null);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -60,16 +61,16 @@ function AddRecipeScreen() {
 
   const validateForm = () => {
     if (!formData.name || !formData.instructions || !formData.category || !formData.mealType || !formData.calories || !thumbnailFile) {
-      setError('Please fill in all required fields and upload a thumbnail.');
+      toast.error('Please fill in all required fields and upload a thumbnail.', { autoClose: 3000 });
       return false;
     }
     if (formData.ingredients.length === 0) {
-      setError('Please provide at least one ingredient.');
+      toast.error('Please provide at least one ingredient.', { autoClose: 3000 });
       return false;
     }
     const allowedImageTypes = ['image/jpeg', 'image/png', 'image/jpg'];
     if (!allowedImageTypes.includes(thumbnailFile.type)) {
-      setError('Please upload a valid image file (JPEG, PNG, JPG).');
+      toast.error('Please upload a valid image file (JPEG, PNG, JPG).', { autoClose: 3000 });
       return false;
     }
     return true;
@@ -77,7 +78,6 @@ function AddRecipeScreen() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError(null);
 
     if (!validateForm()) return;
 
@@ -112,11 +112,15 @@ function AddRecipeScreen() {
       const docRef = await addDoc(collection(db, 'recipes'), recipeData);
       console.log('Recipe added to Firestore with ID:', docRef.id);
 
-      alert('Recipe added successfully!');
-      navigate('/recipes');
+      toast.success('Recipe added successfully!', { autoClose: 3000 });
+
+      // Navigate back to recipes after a short delay to allow toast to be seen
+      setTimeout(() => {
+        navigate('/recipes');
+      }, 3000);
     } catch (err) {
       console.error('Error adding recipe:', err.message);
-      setError('Failed to add recipe. Please try again later.');
+      toast.error('Failed to add recipe. Please try again later.', { autoClose: 3000 });
     }
   };
 
@@ -136,7 +140,6 @@ function AddRecipeScreen() {
               Back to Recipes
             </button>
           </div>
-          {error && <p className="error-message">{error}</p>}
           <form onSubmit={handleSubmit}>
             <div className="form-section">
               <h3>Recipe Information</h3>
@@ -304,6 +307,17 @@ function AddRecipeScreen() {
           </form>
         </div>
       </div>
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+      />
     </div>
   );
 }

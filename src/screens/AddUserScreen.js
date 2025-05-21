@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../firebase';
 import { collection, addDoc, doc, setDoc } from 'firebase/firestore';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css'; // Import toast styles
 import TopBar from '../components/topBar';
 import SideBar from '../components/SideBar';
 import './AddUserScreen.css';
@@ -13,7 +15,6 @@ function AddUserScreen() {
     name: '',
     profileCompleted: false,
   });
-  const [error, setError] = useState(null);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -22,11 +23,11 @@ function AddUserScreen() {
 
   const validateForm = () => {
     if (!formData.email || !formData.name) {
-      setError('Email and name are required.');
+      toast.error('Email and name are required.', { autoClose: 3000 });
       return false;
     }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      setError('Please enter a valid email address.');
+      toast.error('Please enter a valid email address.', { autoClose: 3000 });
       return false;
     }
     return true;
@@ -34,7 +35,6 @@ function AddUserScreen() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError(null);
 
     if (!validateForm()) {
       return;
@@ -61,14 +61,19 @@ function AddUserScreen() {
       });
       console.log('User progress initialized:', userRef.id);
 
-      // Navigate back to dashboard
-      navigate('/dashboard');
+      // Show success toast
+      toast.success('User added successfully!', { autoClose: 3000 });
+
+      // Navigate back to dashboard after a short delay to allow toast to be seen
+      setTimeout(() => {
+        navigate('/dashboard');
+      }, 3000);
     } catch (err) {
       console.error('Error adding user:', err.message);
       if (err.code === 'permission-denied') {
-        setError('Firestore database not initialized. Please contact the project owner.');
+        toast.error('Firestore database not initialized. Please contact the project owner.', { autoClose: 3000 });
       } else {
-        setError('Failed to add user. Please try again later.');
+        toast.error('Failed to add user. Please try again later.', { autoClose: 3000 });
       }
     }
   };
@@ -87,7 +92,6 @@ function AddUserScreen() {
               Back to Users
             </button>
           </div>
-          {error && <p className="error-message">{error}</p>}
           <div className="form-sections">
             <form onSubmit={handleSubmit}>
               <div className="form-section basic-info">
@@ -99,7 +103,7 @@ function AddUserScreen() {
                     name="name"
                     value={formData.name}
                     onChange={handleInputChange}
-                    placeholder="Usama Yousaf"
+                    placeholder="XYZ"
                     required
                   />
                 </div>
@@ -110,7 +114,7 @@ function AddUserScreen() {
                     name="email"
                     value={formData.email}
                     onChange={handleInputChange}
-                    placeholder="usama.yousaf0334@gmail.com"
+                    placeholder="xyz@gmail.com"
                     required
                   />
                 </div>
@@ -122,6 +126,17 @@ function AddUserScreen() {
           </div>
         </div>
       </div>
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+      />
     </div>
   );
 }
