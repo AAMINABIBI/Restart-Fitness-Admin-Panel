@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { auth } from '../firebase';
+import { auth, db } from '../firebase';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { doc, setDoc } from 'firebase/firestore';
 import loginImage from '../assets/Login-image.png';
 import logo from '../assets/logo.png';
 import './RegisterAdminScreen.css';
@@ -52,10 +53,27 @@ function RegisterAdminScreen() {
     }
 
     try {
-      // Register the admin with Firebase Authentication
-      await createUserWithEmailAndPassword(auth, formData.email, formData.password);
+      const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
+      const user = userCredential.user;
+
+      await setDoc(doc(db, 'users', user.uid), {
+        email: formData.email,
+        name: formData.email.split('@')[0], // Default name from email
+        profileCompleted: false,
+        isAdmin: true,
+        createdAt: new Date().toISOString(),
+      });
+
+      await setDoc(doc(db, 'userProgress', user.uid), {
+        currentLevel: 1,
+        status: 'in_progress',
+        updatedAt: new Date().toISOString(),
+        assignedWorkouts: [],
+        assignedDietPlans: [],
+      });
+
       console.log('Admin registered successfully:', formData.email);
-      navigate('/'); // Redirect to login screen after registration
+      navigate('/');
     } catch (err) {
       console.error('Registration error:', err.message);
       if (err.code === 'auth/email-already-in-use') {
@@ -124,7 +142,7 @@ function RegisterAdminScreen() {
           </span>
         </p>
         <div className="copyright">
-          © 2023 Andrews | ALL RIGHT RESERVED
+          © 2025 Andrews | ALL RIGHT RESERVED
         </div>
       </div>
       <div className="register-image-section">

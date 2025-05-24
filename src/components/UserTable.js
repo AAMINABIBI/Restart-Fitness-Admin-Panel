@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { db } from '../firebase';
-import { doc, getDoc, setDoc, collection, addDoc, deleteDoc, updateDoc, onSnapshot, serverTimestamp, getDocs, deleteField } from 'firebase/firestore';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css'; // Import toast styles
-import { FaEdit, FaTrash } from 'react-icons/fa'; // Import edit and trash icons
+import { db, auth } from '../firebase';
+import { doc, getDoc, setDoc, collection, addDoc, deleteDoc, updateDoc, onSnapshot, serverTimestamp, getDocs } from 'firebase/firestore';
+import { toast } from 'react-toastify';
+import { FaEdit, FaTrash } from 'react-icons/fa';
 import './UserTable.css';
 
-function UserTable({ users, setUsers }) {
+function UserTable({ users, setUsers, setAdminUsers }) {
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState(null);
   const [selectedType, setSelectedType] = useState(null);
@@ -22,22 +21,21 @@ function UserTable({ users, setUsers }) {
   });
   const [dietPlans, setDietPlans] = useState([]);
   const [workouts, setWorkouts] = useState([]);
-  const [isEditUserMode, setIsEditUserMode] = useState(false); // Track if modal is for editing the entire user
+  const [isEditUserMode, setIsEditUserMode] = useState(false);
 
-  // Fetch diet plans and workouts from Firestore
   useEffect(() => {
     const unsubscribeDietPlans = onSnapshot(collection(db, 'dietPlans'), (snapshot) => {
       const plans = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
       setDietPlans(plans);
     }, (error) => {
-      toast.error('Error fetching diet plans. Please try again later.', { autoClose: 3000 });
+      toast.error('Error fetching diet plans. Please try again later.');
     });
 
     const unsubscribeWorkouts = onSnapshot(collection(db, 'workouts'), (snapshot) => {
       const workoutsList = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
       setWorkouts(workoutsList);
     }, (error) => {
-      toast.error('Error fetching workouts. Please try again later.', { autoClose: 3000 });
+      toast.error('Error fetching workouts. Please try again later.');
     });
 
     return () => {
@@ -45,6 +43,34 @@ function UserTable({ users, setUsers }) {
       unsubscribeWorkouts();
     };
   }, []);
+
+  useEffect(() => {
+    const enhanceUsers = async () => {
+      const updatedUsers = await Promise.all(users.map(async (user) => {
+        const userProgressRef = doc(db, 'userProgress', user.id);
+        const userProgressDoc = await getDoc(userProgressRef);
+        let workoutAssigned = false;
+        let dietPlanAssigned = false;
+
+        if (userProgressDoc.exists()) {
+          const workoutAssignments = await getDocs(collection(db, 'userProgress', user.id, 'assignedWorkouts'));
+          const dietPlanAssignments = await getDocs(collection(db, 'userProgress', user.id, 'assignedDietPlans'));
+          workoutAssigned = workoutAssignments.docs.some((doc) => doc.data().status === 'active');
+          dietPlanAssigned = dietPlanAssignments.docs.some((doc) => doc.data().status === 'active');
+        }
+
+        return { ...user, workoutAssigned, dietPlanAssigned };
+      }));
+      setUsers(updatedUsers);
+    };
+
+    if (users.length > 0) {
+      enhanceUsers().catch((error) => {
+        console.error('Error enhancing users:', error);
+        toast.error('Failed to load user assignments. Please try again.');
+      });
+    }
+  }, [users, setUsers]);
 
   const toggleAssignment = (userId, type) => {
     setSelectedUserId(userId);
@@ -69,7 +95,6 @@ function UserTable({ users, setUsers }) {
     const userProgressRef = doc(db, 'userProgress', selectedUserId);
     const userProgressDoc = await getDoc(userProgressRef);
 
-    // Create userProgress document if it doesn't exist
     if (!userProgressDoc.exists()) {
       await setDoc(userProgressRef, {
         currentLevel: 1,
@@ -79,13 +104,11 @@ function UserTable({ users, setUsers }) {
     }
 
     const subCollection = selectedType === 'workout' ? 'assignedWorkouts' : 'assignedDietPlans';
-    const field = selectedType === 'workout' ? 'workoutAssigned' : 'dietPlanAssigned';
     const idField = selectedType === 'workout' ? 'workoutId' : 'dietPlanId';
     const selectedId = formData[idField];
 
-    // Validation: Ensure a workout or diet plan is selected
     if (!selectedId) {
-      toast.error(`Please select a ${selectedType === 'workout' ? 'workout' : 'diet plan'} to assign.`, { autoClose: 3000 });
+      toast.error(`Please select a ${selectedType === 'workout' ? 'workout' : 'diet plan'} to assign.`);
       return;
     }
 
@@ -108,10 +131,10 @@ function UserTable({ users, setUsers }) {
 
       setUsers((prevUsers) =>
         prevUsers.map((u) =>
-          u.id === selectedUserId ? { ...u, [field]: true } : u
+          u.id === selectedUserId ? { ...u, [idField === 'workoutId' ? 'workoutAssigned' : 'dietPlanAssigned']: true } : u
         )
       );
-      toast.success(`${selectedType === 'workout' ? 'Workout' : 'Diet Plan'} assigned successfully!`, { autoClose: 3000 });
+      toast.success(`${selectedType === 'workout' ? 'Workout' : 'Diet Plan'} assigned successfully!`);
       setModalOpen(false);
       setFormData({
         name: '',
@@ -124,7 +147,50 @@ function UserTable({ users, setUsers }) {
         status: 'active',
       });
     } catch (error) {
-      toast.error(`Failed to assign ${selectedType === 'workout' ? 'workout' : 'diet plan'}. Please try again.`, { autoClose: 3000 });
+      console.error('Error assigning:', error);
+      toast.error(`Failed to assign ${selectedType === 'workout' ? 'workout' : 'diet plan'}. Please try again.`);
+    }
+  };
+
+  const handleToggleAdmin = async (userId, currentUserData) => {
+    const currentUser = auth.currentUser;
+    if (currentUser && userId === currentUser.uid) {
+      toast.error('You cannot change your own admin status.');
+      return;
+    }
+
+    try {
+      const isAdminUser = currentUserData.collection === 'adminUsers';
+      const targetCollection = isAdminUser ? collection(db, 'users') : collection(db, 'adminUsers');
+      const sourceCollection = isAdminUser ? collection(db, 'adminUsers') : collection(db, 'users');
+
+      // Get the current user data
+      const userDocRef = doc(sourceCollection, userId);
+      const userDoc = await getDoc(userDocRef);
+      if (!userDoc.exists()) {
+        toast.error('User not found.');
+        return;
+      }
+
+      const userData = userDoc.data();
+
+      // Delete from source collection
+      await deleteDoc(userDocRef);
+      console.log(`Deleted user ${userId} from ${sourceCollection.id}`);
+
+      // Add to target collection with updated metadata
+      const newUserRef = await addDoc(targetCollection, {
+        ...userData,
+        createdAt: serverTimestamp(),
+        collection: targetCollection.id,
+      });
+      console.log(`Added user ${newUserRef.id} to ${targetCollection.id}`);
+
+      // Rely on onSnapshot to update state
+      toast.success(`User ${isAdminUser ? 'demoted from' : 'promoted to'} admin status!`);
+    } catch (error) {
+      console.error('Error toggling admin status:', error.message, error.stack);
+      toast.error(`Failed to update admin status. Error: ${error.message}`);
     }
   };
 
@@ -137,7 +203,7 @@ function UserTable({ users, setUsers }) {
       const userProgressDoc = await getDoc(userProgressRef);
 
       if (!userDoc.exists()) {
-        toast.error('User not found.', { autoClose: 3000 });
+        toast.error('User not found.');
         return;
       }
 
@@ -152,12 +218,8 @@ function UserTable({ users, setUsers }) {
         const activeWorkout = workoutAssignments.docs.find((doc) => doc.data().status === 'active');
         const activeDietPlan = dietPlanAssignments.docs.find((doc) => doc.data().status === 'active');
 
-        if (activeWorkout) {
-          workoutData = activeWorkout.data();
-        }
-        if (activeDietPlan) {
-          dietPlanData = activeDietPlan.data();
-        }
+        if (activeWorkout) workoutData = activeWorkout.data();
+        if (activeDietPlan) dietPlanData = activeDietPlan.data();
       }
 
       setFormData({
@@ -174,7 +236,8 @@ function UserTable({ users, setUsers }) {
       setIsEditUserMode(true);
       setModalOpen(true);
     } catch (error) {
-      toast.error('Failed to load user data for editing. Please try again.', { autoClose: 3000 });
+      console.error('Error editing user:', error);
+      toast.error('Failed to load user data for editing. Please try again.');
     }
   };
 
@@ -185,14 +248,12 @@ function UserTable({ users, setUsers }) {
     const userProgressRef = doc(db, 'userProgress', selectedUserId);
 
     try {
-      // Update user document
       await updateDoc(userDocRef, {
         name: formData.name,
         email: formData.email,
         profileCompleted: formData.profileCompleted,
       });
 
-      // Update or create workout assignment
       if (formData.workoutId) {
         const workoutAssignments = await getDocs(collection(db, 'userProgress', selectedUserId, 'assignedWorkouts'));
         const activeWorkout = workoutAssignments.docs.find((doc) => doc.data().status === 'active');
@@ -214,7 +275,6 @@ function UserTable({ users, setUsers }) {
         }
       }
 
-      // Update or create diet plan assignment
       if (formData.dietPlanId) {
         const dietPlanAssignments = await getDocs(collection(db, 'userProgress', selectedUserId, 'assignedDietPlans'));
         const activeDietPlan = dietPlanAssignments.docs.find((doc) => doc.data().status === 'active');
@@ -236,23 +296,7 @@ function UserTable({ users, setUsers }) {
         }
       }
 
-      // Update frontend state
-      setUsers((prevUsers) =>
-        prevUsers.map((u) =>
-          u.id === selectedUserId
-            ? {
-                ...u,
-                name: formData.name,
-                email: formData.email,
-                profileCompleted: formData.profileCompleted,
-                workoutAssigned: !!formData.workoutId,
-                dietPlanAssigned: !!formData.dietPlanId,
-              }
-            : u
-        )
-      );
-
-      toast.success('User updated successfully!', { autoClose: 3000 });
+      toast.success('User updated successfully!');
       setModalOpen(false);
       setFormData({
         name: '',
@@ -266,7 +310,8 @@ function UserTable({ users, setUsers }) {
       });
       setIsEditUserMode(false);
     } catch (error) {
-      toast.error('Failed to update user. Please try again.', { autoClose: 3000 });
+      console.error('Error updating user:', error);
+      toast.error('Failed to update user. Please try again.');
     }
   };
 
@@ -274,28 +319,20 @@ function UserTable({ users, setUsers }) {
     if (!window.confirm('Are you sure you want to delete this user and all associated data?')) return;
 
     try {
-      // Delete user document
       await deleteDoc(doc(db, 'users', userId));
-
-      // Delete userProgress document and its sub-collections
       const userProgressRef = doc(db, 'userProgress', userId);
       const workoutAssignments = await getDocs(collection(db, 'userProgress', userId, 'assignedWorkouts'));
       const dietPlanAssignments = await getDocs(collection(db, 'userProgress', userId, 'assignedDietPlans'));
 
-      // Delete all workout assignments
       await Promise.all(workoutAssignments.docs.map((doc) => deleteDoc(doc.ref)));
-
-      // Delete all diet plan assignments
       await Promise.all(dietPlanAssignments.docs.map((doc) => deleteDoc(doc.ref)));
-
-      // Delete the userProgress document
       await deleteDoc(userProgressRef);
 
-      // Update frontend state
       setUsers((prevUsers) => prevUsers.filter((u) => u.id !== userId));
-      toast.success('User deleted successfully!', { autoClose: 3000 });
+      toast.success('User deleted successfully!');
     } catch (error) {
-      toast.error('Failed to delete user. Please try again.', { autoClose: 3000 });
+      console.error('Error deleting user:', error);
+      toast.error('Failed to delete user. Please try again.');
     }
   };
 
@@ -331,6 +368,7 @@ function UserTable({ users, setUsers }) {
             <th>Name</th>
             <th>Email</th>
             <th>Profile Completed</th>
+            <th>Admin</th>
             <th>Workout</th>
             <th>Diet Plan</th>
             <th>Edit</th>
@@ -341,9 +379,20 @@ function UserTable({ users, setUsers }) {
           {users.map((user, index) => (
             <tr key={user.id}>
               <td>{index + 1}</td>
-              <td>{user.name}</td>
-              <td>{user.email}</td>
+              <td>{user.name || 'No Name'}</td>
+              <td>{user.email || 'No Email'}</td>
               <td>{user.profileCompleted ? 'Yes' : 'No'}</td>
+              <td>
+                <label className="switch">
+                  <input
+                    type="checkbox"
+                    checked={user.collection === 'adminUsers'}
+                    onChange={() => handleToggleAdmin(user.id, user)}
+                    disabled={auth.currentUser && user.id === auth.currentUser.uid}
+                  />
+                  <span className="slider round"></span>
+                </label>
+              </td>
               <td>
                 <div className="action-cell">
                   <button
@@ -366,18 +415,12 @@ function UserTable({ users, setUsers }) {
               </td>
               <td>
                 <div className="action-cell">
-                  <FaEdit
-                    className="edit-icon"
-                    onClick={() => handleEditUser(user.id)}
-                  />
+                  <FaEdit className="edit-icon" onClick={() => handleEditUser(user.id)} />
                 </div>
               </td>
               <td>
                 <div className="action-cell">
-                  <FaTrash
-                    className="delete-icon"
-                    onClick={() => handleDeleteUser(user.id)}
-                  />
+                  <FaTrash className="delete-icon" onClick={() => handleDeleteUser(user.id)} />
                 </div>
               </td>
             </tr>
@@ -494,17 +537,6 @@ function UserTable({ users, setUsers }) {
           </div>
         </div>
       )}
-      <ToastContainer
-        position="top-right"
-        autoClose={3000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-      />
     </div>
   );
 }

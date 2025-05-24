@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { db, storage } from '../firebase';
+import { db } from '../firebase';
 import { collection, doc, getDocs, setDoc, updateDoc, deleteDoc, onSnapshot } from 'firebase/firestore';
-import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { toast } from 'react-toastify';
 import { FaEdit, FaTrash, FaPlus } from 'react-icons/fa';
 import TopBar from '../components/topBar';
 import SideBar from '../components/SideBar';
@@ -14,7 +12,6 @@ function LevelBadgesScreen() {
   const [modalOpen, setModalOpen] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
-    badgeFile: null,
     badgeUrl: '',
   });
   const [editLevelId, setEditLevelId] = useState(null);
@@ -24,8 +21,8 @@ function LevelBadgesScreen() {
     const unsubscribe = onSnapshot(collection(db, 'levels'), (snapshot) => {
       const levelsData = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
       setLevels(levelsData);
-    }, () => {
-      toast.error('Error fetching levels. Please try again later.', { autoClose: 3000 });
+    }, (error) => {
+      toast.error('Error fetching levels. Please try again later.');
     });
 
     return () => unsubscribe();
@@ -35,77 +32,47 @@ function LevelBadgesScreen() {
     if (level) {
       setFormData({
         name: level.name || '',
-        badgeFile: null,
         badgeUrl: level.badgeUrl || '',
       });
       setEditLevelId(level.id);
     } else {
-      setFormData({ name: '', badgeFile: null, badgeUrl: '' });
+      setFormData({ name: '', badgeUrl: '' });
       setEditLevelId(null);
     }
     setModalOpen(true);
   };
 
-  const handleFileUpload = async (file) => {
-    return new Promise((resolve, reject) => {
-      if (!file) return reject('No file selected.');
-
-      const storageRef = ref(storage, `levels/${file.name}`);
-      const uploadTask = uploadBytesResumable(storageRef, file);
-
-      uploadTask.on(
-        'state_changed',
-        null,
-        (error) => {
-          toast.error('Error uploading file!');
-          reject(error);
-        },
-        async () => {
-          const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-          resolve(downloadURL);
-        }
-      );
-    });
-  };
-
   const handleSave = async () => {
     if (!formData.name.trim()) {
-      toast.error('Name is required.', { autoClose: 3000 });
+      toast.error('Name is required.');
       return;
     }
 
     try {
-      let badgeUrl = formData.badgeUrl;
-
-      if (formData.badgeFile) {
-        badgeUrl = await handleFileUpload(formData.badgeFile);
-      }
-
       if (editLevelId) {
         await updateDoc(doc(db, 'levels', editLevelId), {
           name: formData.name,
-          badgeUrl: badgeUrl || '',
+          badgeUrl: formData.badgeUrl || '',
         });
-        toast.success('Level updated successfully!', { autoClose: 3000 });
+        toast.success('Level updated successfully!');
       } else {
         const levelsSnapshot = await getDocs(collection(db, 'levels'));
-        const numericIds = levelsSnapshot.docs.map(doc => parseInt(doc.id)).filter(id => !isNaN(id));
+        const numericIds = levelsSnapshot.docs
+          .map(doc => parseInt(doc.id))
+          .filter(id => !isNaN(id));
         const maxId = numericIds.length > 0 ? Math.max(...numericIds) : 0;
         const newId = (maxId + 1).toString();
-
         await setDoc(doc(db, 'levels', newId), {
           name: `Level ${newId}`,
-          badgeUrl: badgeUrl || '',
+          badgeUrl: formData.badgeUrl || '',
         });
-
-        toast.success('Level added successfully!', { autoClose: 3000 });
+        toast.success('Level added successfully!');
       }
-
       setModalOpen(false);
-      setFormData({ name: '', badgeFile: null, badgeUrl: '' });
+      setFormData({ name: '', badgeUrl: '' });
       setEditLevelId(null);
-    } catch {
-      toast.error(`Failed to ${editLevelId ? 'update' : 'add'} level. Please try again.`, { autoClose: 3000 });
+    } catch (error) {
+      toast.error(`Failed to ${editLevelId ? 'update' : 'add'} level. Please try again.`);
     }
   };
 
@@ -114,19 +81,18 @@ function LevelBadgesScreen() {
 
     try {
       await deleteDoc(doc(db, 'levels', id));
-      toast.success('Level deleted successfully!', { autoClose: 3000 });
-    } catch {
-      toast.error('Failed to delete level. Please try again.', { autoClose: 3000 });
+      toast.success('Level deleted successfully!');
+    } catch (error) {
+      toast.error('Failed to delete level. Please try again.');
     }
   };
 
   const handleInputChange = (e) => {
-    const { name, value, files } = e.target;
-    if (files) {
-      setFormData((prev) => ({ ...prev, badgeFile: files[0] }));
-    } else {
-      setFormData((prev) => ({ ...prev, [name]: value }));
-    }
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
   return (
@@ -184,15 +150,17 @@ function LevelBadgesScreen() {
                       name="name"
                       value={formData.name}
                       onChange={handleInputChange}
-                      placeholder="Enter level name"
+                      placeholder="Enter level name (e.g., Level 1)"
                     />
                   </div>
                   <div className="form-group">
-                    <label>Badge Image</label>
+                    <label>Badge URL</label>
                     <input
-                      type="file"
-                      accept="image/*"
+                      type="text"
+                      name="badgeUrl"
+                      value={formData.badgeUrl}
                       onChange={handleInputChange}
+                      placeholder="Enter badge URL"
                     />
                   </div>
                 </div>
@@ -203,7 +171,6 @@ function LevelBadgesScreen() {
               </div>
             </div>
           )}
-          <ToastContainer />
         </div>
       </div>
     </div>

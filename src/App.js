@@ -1,15 +1,16 @@
 import React, { Suspense, lazy } from 'react';
 import { Routes, Route } from 'react-router-dom';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import ProtectedRoute from './components/ProtectedRoute';
 import './App.css';
 
 const LoginScreen = lazy(() => import('./screens/LoginScreen'));
 const RegisterAdminScreen = lazy(() => import('./screens/RegisterAdminScreen'));
-const UserScreen = lazy(() => import('./screens/users'));
+const UserScreen = lazy(() => import('./screens/UserScreen'));
 const AddUserScreen = lazy(() => import('./screens/AddUserScreen'));
 const LevelsScreen = lazy(() => import('./screens/LevelsScreen'));
 const LevelBadgesScreen = lazy(() => import('./screens/LevelBadgesScreen'));
-const WorkoutsScreen = lazy(() => import('./screens/workouts'));
 const AddWorkoutScreen = lazy(() => import('./screens/AddWorkoutScreen'));
 const PopularWorkoutsScreen = lazy(() => import('./screens/PopularWorkoutsScreen'));
 const RecipesScreen = lazy(() => import('./screens/RecipesScreen'));
@@ -65,7 +66,7 @@ function App() {
             path="/workouts"
             element={
               <ProtectedRoute>
-                <WorkoutsScreen />
+                <AddWorkoutScreen />
               </ProtectedRoute>
             }
           />
@@ -159,6 +160,17 @@ function App() {
           />
         </Routes>
       </Suspense>
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+      />
     </div>
   );
 }
