@@ -14,7 +14,7 @@ function RegisterAdminScreen() {
     confirmPassword: '',
   });
   const [error, setError] = useState(null);
-
+const [isLoading,setisLoading]=useState(false)
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData({
@@ -46,7 +46,7 @@ function RegisterAdminScreen() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
-
+setisLoading(true)
     if (!validateForm()) {
       return;
     }
@@ -72,7 +72,7 @@ function RegisterAdminScreen() {
       } else {
         console.log('Admin already exists in adminUsers, proceeding to login.');
       }
-
+setisLoading(false)
       navigate('/');
     } catch (err) {
       console.error('Registration error:', err.message);
@@ -85,11 +85,12 @@ function RegisterAdminScreen() {
       } else {
         setError('Failed to register. Please try again later.');
       }
+      setisLoading(false)
     }
   };
 
   const handleLoginRedirect = () => {
-    navigate('/login');
+    navigate('/');
   };
 
   return (
@@ -101,6 +102,9 @@ function RegisterAdminScreen() {
         <h4>Create a new admin account</h4>
         {error && <p className="error-message">{error}</p>}
         <form onSubmit={handleSubmit}>
+          {
+            isLoading &&<div className='spinner'>Loading...</div>
+          }
           <div className="form-group">
             <input
               type="email"

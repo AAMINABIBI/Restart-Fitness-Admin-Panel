@@ -6,6 +6,7 @@ import logo from '../assets/logo.png';
 
 function SideBar() {
   return (
+    
     <div className="side-bar">
       <div>
         <img src={logo} className="sidebar-logo" alt="Restart Logo" />

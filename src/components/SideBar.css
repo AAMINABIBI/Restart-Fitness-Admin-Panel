@@ -10,6 +10,8 @@
   /* top: 0; */
   /* left: 0; */
   z-index: 10;
+  overflow-x: hidden;
+  scrollbar-width: thin;
   overflow-y: auto; /* Keep the scroll if content overflows */
   margin-right: 20px; /* Add some margin to the right to separate from main content */
 }

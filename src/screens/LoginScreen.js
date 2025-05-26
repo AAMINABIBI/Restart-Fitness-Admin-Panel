@@ -8,6 +8,7 @@ import './LoginScreen.css';
 
 function LoginScreen() {
   const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -25,7 +26,7 @@ function LoginScreen() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
-
+    setIsLoading(true)
     try {
       const userCredential = await signInWithEmailAndPassword(auth, formData.email, formData.password);
       const user = userCredential.user;
@@ -42,6 +43,7 @@ function LoginScreen() {
         await auth.signOut();
         setError('Access denied. Only admins can log in here.');
       }
+      setIsLoading(false)
     } catch (err) {
       console.error('Login error:', err.message);
       if (err.code === 'auth/wrong-password') {
@@ -53,6 +55,7 @@ function LoginScreen() {
       } else {
         setError('Failed to log in. Please try again later.');
       }
+      setIsLoading(false)
     }
   };
 
@@ -62,12 +65,15 @@ function LoginScreen() {
 
   return (
     <div className="login-screen-container">
+
       <div className="login-form-section">
         <div>
           <img src={logo} className="sidebar-logo" alt="Logo" />
         </div>
         <h4>Admin Login</h4>
         {error && <p className="error-message">{error}</p>}
+        {isLoading && <div className="spinner">Loading...</div>}
+
         <form onSubmit={handleSubmit}>
           <div className="form-group">
             <input
