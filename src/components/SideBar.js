@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { FaSearch, FaUsers, FaLevelUpAlt, FaDumbbell, FaUtensils, FaBook, FaCalendarWeek, FaTrophy, FaComment, FaFire } from 'react-icons/fa';
+import { FaUsers, FaLevelUpAlt, FaDumbbell, FaUtensils, FaBook, FaCalendarWeek, FaTrophy, FaComment, FaFire } from 'react-icons/fa';
 import './SideBar.css';
 import logo from '../assets/logo.png';
 
@@ -10,10 +10,10 @@ function SideBar() {
       <div>
         <img src={logo} className="sidebar-logo" alt="Restart Logo" />
       </div>
-      <div className="search-bar">
+      {/* <div className="search-bar">
         <FaSearch className="search-icon" />
         <input type="text" placeholder="Search Menu..." />
-      </div>
+      </div> */}
       <nav className="nav-links">
         <NavLink
           to="/dashboard"

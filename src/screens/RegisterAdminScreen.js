@@ -73,7 +73,7 @@ function RegisterAdminScreen() {
         console.log('Admin already exists in adminUsers, proceeding to login.');
       }
 
-      navigate('/login');
+      navigate('/');
     } catch (err) {
       console.error('Registration error:', err.message);
       if (err.code === 'auth/email-already-in-use') {

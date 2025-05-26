@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { FaSearch, FaBell } from 'react-icons/fa';
+import {  FaBell } from 'react-icons/fa';
 import { auth, db, storage } from '../firebase';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
@@ -98,10 +98,10 @@ function TopBar() {
     <div className="top-bar">
       <div className="top-bar-center"></div>
       <div className="top-bar-right">
-        <div className="search-bar">
+        {/* <div className="search-bar">
           <FaSearch className="search-icon" />
           <input type="text" placeholder="Search here..." />
-        </div>
+        </div> */}
         <div className="notifications">
           <FaBell className="notification-icon" />
         </div>
