@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import {  FaBell } from 'react-icons/fa';
+import { FaBell } from 'react-icons/fa';
 import { auth, db, storage } from '../firebase';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
@@ -19,20 +19,20 @@ function TopBar() {
         setUserEmail(user.email);
 
         try {
-          const userDocRef = doc(db, 'users', user.uid);
-          const userDoc = await getDoc(userDocRef);
+          const adminDocRef = doc(db, 'adminUsers', user.uid); // Changed to adminUsers
+          const adminDoc = await getDoc(adminDocRef);
 
-          if (userDoc.exists() && userDoc.data().DisplayImageURL) {
-            setUserImage(userDoc.data().DisplayImageURL);
+          if (adminDoc.exists() && adminDoc.data().DisplayImageURL) {
+            setUserImage(adminDoc.data().DisplayImageURL);
           } else {
-            await setDoc(userDocRef, {
+            await setDoc(adminDocRef, {
               email: user.email,
               DisplayImageURL: defaultUserImage,
             }, { merge: true });
           }
         } catch (error) {
-          console.error('Error fetching or creating user data:', error);
-          toast.error('Failed to fetch or create user profile.');
+          console.error('Error fetching or creating admin data:', error);
+          toast.error('Failed to fetch or create admin profile.');
         }
       } else {
         setUserEmail('');
@@ -66,7 +66,7 @@ function TopBar() {
 
     try {
       const userId = auth.currentUser.uid;
-      const storageRef = ref(storage, `users/${userId}/profile.jpg`);
+      const storageRef = ref(storage, `users/${userId}/profile.jpg`); // Storage path unchanged
       const uploadTask = uploadBytesResumable(storageRef, imageFile);
 
       await new Promise((resolve, reject) => {
@@ -80,8 +80,8 @@ function TopBar() {
 
       const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
 
-      const userDocRef = doc(db, 'users', userId);
-      await setDoc(userDocRef, {
+      const adminDocRef = doc(db, 'adminUsers', userId); // Changed to adminUsers
+      await setDoc(adminDocRef, {
         DisplayImageURL: downloadURL,
       }, { merge: true });
 
@@ -98,10 +98,6 @@ function TopBar() {
     <div className="top-bar">
       <div className="top-bar-center"></div>
       <div className="top-bar-right">
-        {/* <div className="search-bar">
-          <FaSearch className="search-icon" />
-          <input type="text" placeholder="Search here..." />
-        </div> */}
         <div className="notifications">
           <FaBell className="notification-icon" />
         </div>
