@@ -28,7 +28,7 @@ function AddUserScreen() {
       const newUserRef = await addDoc(collectionRef, {
         ...formData,
         createdAt: serverTimestamp(),
-        collection: collectionRef.id, // Track collection
+        collection: collectionRef.id,
       });
       console.log('User added to:', collectionRef.id, 'with ID:', newUserRef.id);
       navigate('/dashboard');

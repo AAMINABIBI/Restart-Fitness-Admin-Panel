@@ -2,8 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { auth, db } from '../firebase';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { doc, setDoc } from 'firebase/firestore';
-import loginImage from '../assets/Login-image.png';
+import { doc, setDoc, serverTimestamp, getDoc } from 'firebase/firestore';
 import logo from '../assets/logo.png';
 import './RegisterAdminScreen.css';
 
@@ -56,28 +55,29 @@ function RegisterAdminScreen() {
       const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
       const user = userCredential.user;
 
-      await setDoc(doc(db, 'users', user.uid), {
-        email: formData.email,
-        name: formData.email.split('@')[0], // Default name from email
-        profileCompleted: false,
-        isAdmin: true,
-        createdAt: new Date().toISOString(),
-      });
+      // Check if the user already exists in adminUsers (in case of partial registration)
+      const adminDocRef = doc(db, 'adminUsers', user.uid);
+      const adminDoc = await getDoc(adminDocRef);
 
-      await setDoc(doc(db, 'userProgress', user.uid), {
-        currentLevel: 1,
-        status: 'in_progress',
-        updatedAt: new Date().toISOString(),
-        assignedWorkouts: [],
-        assignedDietPlans: [],
-      });
+      if (!adminDoc.exists()) {
+        // Save admin data in adminUsers collection
+        await setDoc(adminDocRef, {
+          email: formData.email,
+          name: formData.email.split('@')[0],
+          profileCompleted: false,
+          isAdmin: true,
+          createdAt: serverTimestamp(),
+        });
+        console.log('Admin registered successfully:', formData.email);
+      } else {
+        console.log('Admin already exists in adminUsers, proceeding to login.');
+      }
 
-      console.log('Admin registered successfully:', formData.email);
-      navigate('/');
+      navigate('/login');
     } catch (err) {
       console.error('Registration error:', err.message);
       if (err.code === 'auth/email-already-in-use') {
-        setError('This email is already registered.');
+        setError('This email is already registered with Firebase Authentication. Please use a different email or log in.');
       } else if (err.code === 'auth/invalid-email') {
         setError('Invalid email format.');
       } else if (err.code === 'auth/weak-password') {
@@ -89,7 +89,7 @@ function RegisterAdminScreen() {
   };
 
   const handleLoginRedirect = () => {
-    navigate('/');
+    navigate('/login');
   };
 
   return (

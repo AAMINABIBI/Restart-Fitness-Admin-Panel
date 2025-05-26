@@ -9,6 +9,7 @@ function UserTable({ users, setUsers, setAdminUsers }) {
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState(null);
   const [selectedType, setSelectedType] = useState(null);
+  const [viewMode, setViewMode] = useState('all'); // 'all', 'admin', or 'app'
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -149,48 +150,6 @@ function UserTable({ users, setUsers, setAdminUsers }) {
     } catch (error) {
       console.error('Error assigning:', error);
       toast.error(`Failed to assign ${selectedType === 'workout' ? 'workout' : 'diet plan'}. Please try again.`);
-    }
-  };
-
-  const handleToggleAdmin = async (userId, currentUserData) => {
-    const currentUser = auth.currentUser;
-    if (currentUser && userId === currentUser.uid) {
-      toast.error('You cannot change your own admin status.');
-      return;
-    }
-
-    try {
-      const isAdminUser = currentUserData.collection === 'adminUsers';
-      const targetCollection = isAdminUser ? collection(db, 'users') : collection(db, 'adminUsers');
-      const sourceCollection = isAdminUser ? collection(db, 'adminUsers') : collection(db, 'users');
-
-      // Get the current user data
-      const userDocRef = doc(sourceCollection, userId);
-      const userDoc = await getDoc(userDocRef);
-      if (!userDoc.exists()) {
-        toast.error('User not found.');
-        return;
-      }
-
-      const userData = userDoc.data();
-
-      // Delete from source collection
-      await deleteDoc(userDocRef);
-      console.log(`Deleted user ${userId} from ${sourceCollection.id}`);
-
-      // Add to target collection with updated metadata
-      const newUserRef = await addDoc(targetCollection, {
-        ...userData,
-        createdAt: serverTimestamp(),
-        collection: targetCollection.id,
-      });
-      console.log(`Added user ${newUserRef.id} to ${targetCollection.id}`);
-
-      // Rely on onSnapshot to update state
-      toast.success(`User ${isAdminUser ? 'demoted from' : 'promoted to'} admin status!`);
-    } catch (error) {
-      console.error('Error toggling admin status:', error.message, error.stack);
-      toast.error(`Failed to update admin status. Error: ${error.message}`);
     }
   };
 
@@ -359,6 +318,13 @@ function UserTable({ users, setUsers, setAdminUsers }) {
     }));
   };
 
+  // Filter users based on viewMode
+  const filteredUsers = viewMode === 'admin'
+    ? users.filter((user) => user.collection === 'adminUsers')
+    : viewMode === 'app'
+      ? users.filter((user) => user.collection === 'users')
+      : users;
+
   return (
     <div className="user-table-container">
       <table className="user-table">
@@ -368,7 +334,6 @@ function UserTable({ users, setUsers, setAdminUsers }) {
             <th>Name</th>
             <th>Email</th>
             <th>Profile Completed</th>
-            <th>Admin</th>
             <th>Workout</th>
             <th>Diet Plan</th>
             <th>Edit</th>
@@ -376,23 +341,12 @@ function UserTable({ users, setUsers, setAdminUsers }) {
           </tr>
         </thead>
         <tbody>
-          {users.map((user, index) => (
+          {filteredUsers.map((user, index) => (
             <tr key={user.id}>
               <td>{index + 1}</td>
               <td>{user.name || 'No Name'}</td>
               <td>{user.email || 'No Email'}</td>
               <td>{user.profileCompleted ? 'Yes' : 'No'}</td>
-              <td>
-                <label className="switch">
-                  <input
-                    type="checkbox"
-                    checked={user.collection === 'adminUsers'}
-                    onChange={() => handleToggleAdmin(user.id, user)}
-                    disabled={auth.currentUser && user.id === auth.currentUser.uid}
-                  />
-                  <span className="slider round"></span>
-                </label>
-              </td>
               <td>
                 <div className="action-cell">
                   <button

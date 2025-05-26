@@ -28,7 +28,7 @@ function App() {
     <div className="App">
       <Suspense fallback={<div>Loading...</div>}>
         <Routes>
-          <Route path="/" element={<LoginScreen />} />
+          <Route path="/login" element={<LoginScreen />} />
           <Route path="/register-admin" element={<RegisterAdminScreen />} />
           <Route
             path="/dashboard"
