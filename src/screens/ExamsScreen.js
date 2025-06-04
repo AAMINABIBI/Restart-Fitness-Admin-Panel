@@ -1,28 +1,53 @@
-import React from 'react';
-import TopBar from '../components/topBar';
-import SideBar from '../components/SideBar';
-import { FaEye, FaTrash } from 'react-icons/fa'; // For view and delete buttons
-import './ExamsScreen.css'; // New CSS file for this screen
+const React = require('react');
+const { useState, useEffect } = React;
+const { useNavigate } = require('react-router-dom');
+const { db } = require('../firebase');
+const { collection, getDocs, doc, getDoc, updateDoc, deleteDoc } = require('firebase/firestore');
+const { toast, ToastContainer } = require('react-toastify');
+require('react-toastify/dist/ReactToastify.css');
+const Modal = require('react-modal');
+const TopBar = require('../components/topBar');
+const SideBar = require('../components/SideBar');
+require('./ExamsScreen.css');
+const { FaEdit, FaTrash } = require('react-icons/fa');
+
+Modal.setAppElement('#root');
 
 function ExamsScreen() {
-  const examVideos = [
-    { id: 1, week: 'July 30, 2023', name: 'John', gender: 'Female', email: 'john@gmail.com', videoLink: '#' },
-    { id: 2, week: 'Aug 6, 2023', name: 'Selena', gender: 'Female', email: 'john@gmail.com', videoLink: '#' },
-    { id: 3, week: 'Aug 5, 2023', name: 'Selena', gender: 'Female', email: 'john@gmail.com', videoLink: '#' },
-  ];
+  const navigate = useNavigate();
+  const [tests, setTests] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(5);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [editFormData, setEditFormData] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-  const handleViewClick = (videoLink) => {
-    console.log(`View video: ${videoLink}`);
-    // Add logic to open the video link (e.g., window.open(videoLink))
+  useEffect(() => {
+    const fetchTests = async () => {
+      try {
+        const querySnapshot = await getDocs(collection(db, 'tests'));
+        const testsList = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+        setTests(testsList);
+      } catch (err) {
+        console.error('Error fetching tests:', err.message);
+        toast.error('Failed to load tests. Please try again later.');
+      }
+    };
+    fetchTests();
+  }, []);
+
+  const handleAddTest = () => {
+    navigate('/exams/add');
   };
 
-  const handleDeleteClick = (id) => {
-    console.log(`Delete video with ID: ${id}`);
-    // Add logic to delete the video (e.g., update state or make an API call)
+  const handleSearch = (e) => {
+    setSearchTerm(e.target.value);
+    setCurrentPage(1);
   };
 
   return (
-    <div className="exams-screen-container">
+    <div className="exams-container">
       <div className="side-bar-container">
         <SideBar />
       </div>
@@ -30,69 +55,50 @@ function ExamsScreen() {
         <TopBar />
         <div className="exams-section">
           <div className="exams-header">
-            <div className="information">Exams Videos</div>
-            <div className="header-actions">
-              <select className="week-dropdown">
-                <option>Week</option>
-                <option>July 30, 2023</option>
-                <option>Aug 6, 2023</option>
-                <option>Aug 5, 2023</option>
-              </select>
+            <div className="information">Exams</div>
+            <div className="search-add">
+              <input
+                type="text"
+                placeholder="Search by title or description..."
+                value={searchTerm}
+                onChange={handleSearch}
+              />
+              <button onClick={handleAddTest}>Add Exam</button>
             </div>
           </div>
-          <div className="user-info">
-            <h3 className="user-info-title">User Information</h3>
-            <table className="exams-table">
+          {tests.length === 0 ? (
+            <p>No exams found.</p>
+          ) : (
+            <table>
               <thead>
                 <tr>
-                  <th>SL</th>
-                  <th>Week</th>
-                  <th>Name</th>
-                  <th>Gender</th>
-                  <th>Email</th>
-                  <th>Video</th>
-                  <th>Actions</th>
+                  <th>Title</th>
+                  <th>Description</th>
+                  <th>Edit</th>
+                  <th>Delete</th>
                 </tr>
               </thead>
               <tbody>
-                {examVideos.map((exam) => (
-                  <tr key={exam.id}>
-                    <td>{exam.id}</td>
-                    <td>{exam.week}</td>
-                    <td>{exam.name}</td>
-                    <td>{exam.gender}</td>
-                    <td>{exam.email}</td>
+                {tests.map((test) => (
+                  <tr key={test.id}>
+                    <td>{test.title}</td>
+                    <td>{test.description}</td>
                     <td>
-                      <button
-                        className="video-link-button"
-                        onClick={() => handleViewClick(exam.videoLink)}
-                      >
-                        Video Link
-                      </button>
+                      <FaEdit onClick={() => console.log('Edit', test.id)} />
                     </td>
                     <td>
-                      <button
-                        className="action-button view-button"
-                        onClick={() => handleViewClick(exam.videoLink)}
-                      >
-                        <FaEye />
-                      </button>
-                      <button
-                        className="action-button delete-button"
-                        onClick={() => handleDeleteClick(exam.id)}
-                      >
-                        <FaTrash />
-                      </button>
+                      <FaTrash onClick={() => console.log('Delete', test.id)} />
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
-          </div>
+          )}
         </div>
       </div>
+      <ToastContainer autoClose={3000} />
     </div>
   );
 }
 
-export default ExamsScreen;
+module.exports = ExamsScreen;
