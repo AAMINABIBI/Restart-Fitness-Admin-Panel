@@ -17,4 +17,4 @@ function ProtectedRoute({ children }) {
   return children;
 }
 
-module.exports = ProtectedRoute;
+export default ProtectedRoute;

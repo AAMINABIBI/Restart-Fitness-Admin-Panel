@@ -1,15 +1,14 @@
-const React = require('react');
-const { useState, useEffect } = React;
-const { useNavigate } = require('react-router-dom');
-const { db } = require('../firebase');
-const { collection, getDocs, doc, getDoc, updateDoc, deleteDoc } = require('firebase/firestore');
-const { toast, ToastContainer } = require('react-toastify');
-require('react-toastify/dist/ReactToastify.css');
-const Modal = require('react-modal');
-const TopBar = require('../components/topBar');
-const SideBar = require('../components/SideBar');
-require('./ExamsScreen.css');
-const { FaEdit, FaTrash } = require('react-icons/fa');
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { db } from '../firebase';
+import { collection, getDocs } from 'firebase/firestore';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import Modal from 'react-modal';
+import TopBar from '../components/topBar';
+import SideBar from '../components/SideBar';
+import './ExamsScreen.css';
+import { FaEdit, FaTrash } from 'react-icons/fa';
 
 Modal.setAppElement('#root');
 
@@ -17,11 +16,6 @@ function ExamsScreen() {
   const navigate = useNavigate();
   const [tests, setTests] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(5);
-  const [editModalOpen, setEditModalOpen] = useState(false);
-  const [editFormData, setEditFormData] = useState(null);
-  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const fetchTests = async () => {
@@ -43,7 +37,6 @@ function ExamsScreen() {
 
   const handleSearch = (e) => {
     setSearchTerm(e.target.value);
-    setCurrentPage(1);
   };
 
   return (
@@ -101,4 +94,4 @@ function ExamsScreen() {
   );
 }
 
-module.exports = ExamsScreen;
+export default ExamsScreen;
