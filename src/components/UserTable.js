@@ -1,11 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import { db, auth } from '../firebase';
-import { doc, getDoc, setDoc, collection, addDoc, deleteDoc, updateDoc, onSnapshot, serverTimestamp, getDocs } from 'firebase/firestore';
 import { toast } from 'react-toastify';
 import { FaEdit, FaTrash } from 'react-icons/fa';
 import './UserTable.css';
+import { 
+  doc, 
+  getDoc, 
+  setDoc, 
+  collection, 
+  addDoc, 
+  deleteDoc, 
+  updateDoc, 
+  onSnapshot, 
+  serverTimestamp, 
+  getDocs, 
+  query, 
+  where 
+} from 'firebase/firestore';
 
-function UserTable({ users, setUsers, setAdminUsers }) {
+function UserTable({ users, setUsers, setAdminUsers, onAssignTest }) {
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState(null);
   const [selectedType, setSelectedType] = useState(null);
@@ -52,15 +65,23 @@ function UserTable({ users, setUsers, setAdminUsers }) {
         const userProgressDoc = await getDoc(userProgressRef);
         let workoutAssigned = false;
         let dietPlanAssigned = false;
+        let testAssigned = false;
 
         if (userProgressDoc.exists()) {
           const workoutAssignments = await getDocs(collection(db, 'userProgress', user.id, 'assignedWorkouts'));
           const dietPlanAssignments = await getDocs(collection(db, 'userProgress', user.id, 'assignedDietPlans'));
+          const testAssignments = await getDocs(query(
+            collection(db, 'assignedTests'),
+            where('userId', '==', user.id),
+            where('status', '==', 'pending')
+          ));
+
           workoutAssigned = workoutAssignments.docs.some((doc) => doc.data().status === 'active');
           dietPlanAssigned = dietPlanAssignments.docs.some((doc) => doc.data().status === 'active');
+          testAssigned = testAssignments.docs.length > 0;
         }
 
-        return { ...user, workoutAssigned, dietPlanAssigned };
+        return { ...user, workoutAssigned, dietPlanAssigned, testAssigned };
       }));
       setUsers(updatedUsers);
     };
@@ -282,9 +303,11 @@ function UserTable({ users, setUsers, setAdminUsers }) {
       const userProgressRef = doc(db, 'userProgress', userId);
       const workoutAssignments = await getDocs(collection(db, 'userProgress', userId, 'assignedWorkouts'));
       const dietPlanAssignments = await getDocs(collection(db, 'userProgress', userId, 'assignedDietPlans'));
+      const testAssignments = await getDocs(collection(db, 'assignedTests', userId)); // Adjusted to top-level collection
 
       await Promise.all(workoutAssignments.docs.map((doc) => deleteDoc(doc.ref)));
       await Promise.all(dietPlanAssignments.docs.map((doc) => deleteDoc(doc.ref)));
+      await Promise.all(testAssignments.docs.map((doc) => deleteDoc(doc.ref)));
       await deleteDoc(userProgressRef);
 
       setUsers((prevUsers) => prevUsers.filter((u) => u.id !== userId));
@@ -336,6 +359,7 @@ function UserTable({ users, setUsers, setAdminUsers }) {
             <th>Profile Completed</th>
             <th>Workout</th>
             <th>Diet Plan</th>
+            <th>Test</th>
             <th>Edit</th>
             <th>Delete</th>
           </tr>
@@ -364,6 +388,16 @@ function UserTable({ users, setUsers, setAdminUsers }) {
                     onClick={() => toggleAssignment(user.id, 'diet')}
                   >
                     {user.dietPlanAssigned ? 'Assigned' : 'Not Assigned'}
+                  </button>
+                </div>
+              </td>
+              <td>
+                <div className="action-cell">
+                  <button
+                    className={`assignment-button ${user.testAssigned ? 'assigned' : 'not-assigned'}`}
+                    onClick={() => onAssignTest(user)}
+                  >
+                    {user.testAssigned ? 'Assigned' : 'Not Assigned'}
                   </button>
                 </div>
               </td>

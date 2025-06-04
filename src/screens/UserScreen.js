@@ -1,26 +1,46 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { db } from '../firebase';
-import { collection, onSnapshot, addDoc, serverTimestamp } from 'firebase/firestore';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import TopBar from '../components/topBar';
 import SideBar from '../components/SideBar';
 import UserTable from '../components/UserTable';
 import './UserScreen.css';
+import { db, auth } from '../firebase'; // Single import for db and auth
+import { 
+  doc, 
+  getDoc, 
+  setDoc, 
+  collection, 
+  addDoc, 
+  serverTimestamp, 
+  onSnapshot, 
+  getDocs 
+} from 'firebase/firestore';
 
 function UserScreen() {
   const navigate = useNavigate();
   const [users, setUsers] = useState([]);
   const [adminUsers, setAdminUsers] = useState([]);
+  const [tests, setTests] = useState([]); // List of available tests
   const [searchQuery, setSearchQuery] = useState('');
   const [showAdminsOnly, setShowAdminsOnly] = useState(false);
   const [showAddUserModal, setShowAddUserModal] = useState(false);
+  const [showAssignTestModal, setShowAssignTestModal] = useState(false);
   const [userType, setUserType] = useState(null); // 'admin' or 'app'
+  const [selectedUser, setSelectedUser] = useState(null); // User to assign test to
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     profileCompleted: false,
   });
+  const [assignTestFormData, setAssignTestFormData] = useState({
+    testId: '',
+    levelId: '',
+    specialNotes: '',
+  });
 
+  // Fetch users and admin users
   useEffect(() => {
     let unsubscribeUsers, unsubscribeAdminUsers;
     try {
@@ -57,6 +77,21 @@ function UserScreen() {
     }
   }, []);
 
+  // Fetch available tests for assignment
+  useEffect(() => {
+    const fetchTests = async () => {
+      try {
+        const querySnapshot = await getDocs(collection(db, 'tests'));
+        const testsList = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+        setTests(testsList);
+      } catch (err) {
+        console.error('Error fetching tests:', err.message);
+        toast.error('Failed to load tests. Please try again later.', { autoClose: 3000 });
+      }
+    };
+    fetchTests();
+  }, []);
+
   const filteredUsers = useMemo(() => {
     return users.filter((user) =>
       (user.name || '').toLowerCase().includes(searchQuery.toLowerCase())
@@ -77,7 +112,7 @@ function UserScreen() {
 
   const handleAddUsersClick = () => {
     setShowAddUserModal(true);
-    setUserType(null); // Reset user type selection
+    setUserType(null);
     setFormData({
       name: '',
       email: '',
@@ -119,7 +154,6 @@ function UserScreen() {
         email: '',
         profileCompleted: false,
       });
-      // No need to navigate; stay on the same page to see the updated table
     } catch (error) {
       console.error('Error adding user:', error);
       alert('Failed to add user. Please try again.');
@@ -133,6 +167,82 @@ function UserScreen() {
       name: '',
       email: '',
       profileCompleted: false,
+    });
+  };
+
+  const handleAssignTestClick = (user) => {
+    setSelectedUser(user);
+    setShowAssignTestModal(true);
+    setAssignTestFormData({
+      testId: '',
+      levelId: '',
+      specialNotes: '',
+    });
+  };
+
+  const handleAssignTestInputChange = (e) => {
+    const { name, value } = e.target;
+    setAssignTestFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleAssignTestSubmit = async (e) => {
+    e.preventDefault();
+    if (!assignTestFormData.testId || !assignTestFormData.levelId) {
+      toast.error('Please select a test and specify a level.', { autoClose: 3000 });
+      return;
+    }
+
+    try {
+      const userProgressRef = doc(db, 'userProgress', selectedUser.id);
+      const userProgressDoc = await getDoc(userProgressRef);
+
+      if (!userProgressDoc.exists()) {
+        await setDoc(userProgressRef, {
+          currentLevel: 1,
+          status: 'in_progress',
+          updatedAt: serverTimestamp(),
+        });
+      }
+
+      const assignedData = {
+        userId: selectedUser.id,
+        testId: assignTestFormData.testId,
+        levelId: parseInt(assignTestFormData.levelId),
+        specialNotes: assignTestFormData.specialNotes || '',
+        status: 'pending',
+        assignedAt: serverTimestamp(),
+        submittedAt: null,
+        reviewedAt: null,
+        videoUrl: null,
+        feedback: null,
+        score: null,
+      };
+
+      await addDoc(collection(db, 'assignedTests'), assignedData);
+      toast.success('Test assigned successfully!', { autoClose: 3000 });
+      setShowAssignTestModal(false);
+      setSelectedUser(null);
+      setAssignTestFormData({
+        testId: '',
+        levelId: '',
+        specialNotes: '',
+      });
+    } catch (error) {
+      console.error('Error assigning test:', error);
+      toast.error('Failed to assign test. Please try again.', { autoClose: 3000 });
+    }
+  };
+
+  const handleAssignTestCancel = () => {
+    setShowAssignTestModal(false);
+    setSelectedUser(null);
+    setAssignTestFormData({
+      testId: '',
+      levelId: '',
+      specialNotes: '',
     });
   };
 
@@ -165,9 +275,15 @@ function UserScreen() {
               </button>
             </div>
           </div>
-          <UserTable users={displayedUsers} setUsers={showAdminsOnly ? setAdminUsers : setUsers} setAdminUsers={setAdminUsers} />
+          <UserTable
+            users={displayedUsers}
+            setUsers={showAdminsOnly ? setAdminUsers : setUsers}
+            setAdminUsers={setAdminUsers}
+            onAssignTest={handleAssignTestClick}
+          />
         </div>
 
+        {/* Add User Modal */}
         {showAddUserModal && (
           <div className="modal">
             <div className="modal-content">
@@ -225,7 +341,69 @@ function UserScreen() {
             </div>
           </div>
         )}
+
+        {/* Assign Test Modal */}
+        {showAssignTestModal && selectedUser && (
+          <div className="modal">
+            <div className="modal-content">
+              <h3>Assign Test to {selectedUser.name}</h3>
+              <form onSubmit={handleAssignTestSubmit}>
+                <div className="form-group">
+                  <label>Select Test</label>
+                  <select
+                    name="testId"
+                    value={assignTestFormData.testId}
+                    onChange={handleAssignTestInputChange}
+                    required
+                  >
+                    <option value="">Select a test</option>
+                    {tests.map((test) => (
+                      <option key={test.id} value={test.id}>
+                        {test.title}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label>Level ID</label>
+                  <input
+                    type="number"
+                    name="levelId"
+                    value={assignTestFormData.levelId}
+                    onChange={handleAssignTestInputChange}
+                    placeholder="Enter level ID"
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Special Notes</label>
+                  <textarea
+                    name="specialNotes"
+                    value={assignTestFormData.specialNotes}
+                    onChange={handleAssignTestInputChange}
+                    placeholder="Enter special notes (optional)"
+                  />
+                </div>
+                <div className="modal-buttons">
+                  <button type="submit">Assign Test</button>
+                  <button type="button" onClick={handleAssignTestCancel}>Cancel</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
       </div>
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+      />
     </div>
   );
 }

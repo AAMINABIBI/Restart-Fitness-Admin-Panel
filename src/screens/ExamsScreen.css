@@ -1,19 +1,21 @@
 .exams-container {
   display: flex;
+  height: 100vh;
 }
 
 .side-bar-container {
-  flex-shrink: 0;
+  width: 250px;
+  background: #f8f9fa;
 }
 
 .main-content {
-  margin-left: 250px; /* Match sidebar width */
+  flex: 1;
   padding: 20px;
-  width: calc(100% - 250px);
+  background: #fff;
 }
 
 .exams-section {
-  background-color: #fff;
+  background: #fff;
   padding: 20px;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -29,6 +31,7 @@
 .information {
   font-size: 24px;
   font-weight: bold;
+  color: #333;
 }
 
 .search-add {
@@ -97,9 +100,9 @@
 .pagination-button {
   padding: 5px 10px;
   border: 1px solid #ddd;
-  background-color: #fff;
-  cursor: pointer;
+  background: #fff;
   border-radius: 4px;
+  cursor: pointer;
 }
 
 .pagination-button.active {
@@ -108,16 +111,16 @@
 }
 
 .modal {
-  position: absolute;
+  position: fixed;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background-color: white;
+  background: white;
   padding: 20px;
   border-radius: 8px;
-  max-width: 500px;
-  width: 90%;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  max-height: 80vh;
+  overflow-y: auto;
 }
 
 .overlay {
@@ -126,7 +129,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.5);
 }
 
 .modal-content {
@@ -146,6 +149,7 @@
 
 .form-group label {
   margin-bottom: 5px;
+  font-weight: bold;
 }
 
 .form-group input {
@@ -155,10 +159,10 @@
 }
 
 .modal-buttons {
-  margin-top: 20px;
   display: flex;
-  gap: 10px;
   justify-content: center;
+  gap: 10px;
+  margin-top: 20px;
 }
 
 .modal-buttons button {
@@ -168,25 +172,7 @@
   cursor: pointer;
 }
 
-.modal-buttons button:first-child {
-  background-color: #007bff;
-  color: white;
-}
-
-.modal-buttons button:first-child:hover {
-  background-color: #0056b3;
-}
-
-.modal-buttons button:last-child {
-  background-color: #dc3545;
-  color: white;
-}
-
-.modal-buttons button:last-child:hover {
-  background-color: #c82333;
-}
-
-.loading-indicator {
-  text-align: center;
-  padding: 20px;
+.modal-buttons button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
 }
