@@ -43,6 +43,7 @@ const ExamsScreen = lazy(() => import('./screens/ExamsScreen'));
 const ChatScreen = lazy(() => import('./screens/chatScreen'));
 const WinnersScreen = lazy(() => import('./screens/winners'));
 const ProtectedRoute = lazy(() => import('./components/ProtectedRoute'));
+const UserDetailsTable = lazy(() => import('./components/UserDetailsTable'));
 
 function App() {
   console.log({
@@ -53,6 +54,7 @@ function App() {
     LevelsScreen,
     LevelBadgesScreen,
     ExamsScreen,
+    UserDetailsTable,
   });
   return (
     <div className="App">
@@ -77,6 +79,10 @@ function App() {
             <Route path="/weekly-challenges" element={<ProtectedRoute><div>Weekly Challenges (Component Missing)</div></ProtectedRoute>} />
             <Route path="/winners" element={<ProtectedRoute><WinnersScreen /></ProtectedRoute>} />
             <Route path="/chat" element={<ProtectedRoute><ChatScreen /></ProtectedRoute>} />
+            <Route path="/user-details/:userId" element={<ProtectedRoute><UserDetailsTable /></ProtectedRoute>} />
+            <Route path="/assign-workout/:userId" element={<ProtectedRoute><div>Assign Workout (Component Missing)</div></ProtectedRoute>} />
+            <Route path="/assign-diet-plan/:userId" element={<ProtectedRoute><div>Assign Diet Plan (Component Missing)</div></ProtectedRoute>} />
+            <Route path="/assign-test/:userId" element={<ProtectedRoute><div>Assign Test (Component Missing)</div></ProtectedRoute>} />
           </Routes>
         </Suspense>
       </ErrorBoundary>
