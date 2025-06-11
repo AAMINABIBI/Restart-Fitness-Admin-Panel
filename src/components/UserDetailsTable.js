@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { db } from '../firebase';
-import { doc, getDoc, collection, getDocs, query, where, addDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, getDoc, collection, getDocs, addDoc, serverTimestamp } from 'firebase/firestore';
 import './UserDetailsTable.css';
 
 function UserDetailsTable() {
@@ -42,18 +42,27 @@ function UserDetailsTable() {
     const fetchAssignments = async () => {
       const userProgressRef = doc(db, 'userProgress', userId);
       const userProgressDoc = await getDoc(userProgressRef);
-      if (userProgressDoc.exists()) {
-        const workoutAssignments = await getDocs(collection(db, 'userProgress', userId, 'assignedWorkouts'));
-        const dietPlanAssignments = await getDocs(collection(db, 'userProgress', userId, 'assignedDietPlans'));
-        const testAssignments = await getDocs(collection(db, 'userProgress', userId, 'assignedTests'));
+      const assignedWorkouts = [];
+      const assignedDietPlans = [];
+      const assignedTests = [];
 
-        setUserDetails(prev => ({
-          ...prev,
-          workouts: workoutAssignments.docs.map(doc => ({ id: doc.id, ...doc.data() })),
-          dietPlans: dietPlanAssignments.docs.map(doc => ({ id: doc.id, ...doc.data() })),
-          tests: testAssignments.docs.map(doc => ({ id: doc.id, ...doc.data() })),
-        }));
+      if (userProgressDoc.exists()) {
+        const workoutSnapshot = await getDocs(collection(db, 'userProgress', userId, 'assignedWorkouts'));
+        assignedWorkouts.push(...workoutSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+
+        const dietPlanSnapshot = await getDocs(collection(db, 'userProgress', userId, 'assignedDietPlans'));
+        assignedDietPlans.push(...dietPlanSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+
+        const testSnapshot = await getDocs(collection(db, 'userProgress', userId, 'assignedTests'));
+        assignedTests.push(...testSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
       }
+
+      setUserDetails(prev => ({
+        ...prev,
+        workouts: assignedWorkouts,
+        dietPlans: assignedDietPlans,
+        tests: assignedTests,
+      }));
     };
 
     const fetchWorkouts = async () => {
