@@ -3,6 +3,7 @@ import { Routes, Route } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import './App.css';
+import WeeklyChallengesScreen from './screens/weeklyChallenges';
 
 // Error Boundary Class
 class ErrorBoundary extends Component {
@@ -76,7 +77,7 @@ function App() {
             <Route path="/diet-plan/add" element={<ProtectedRoute><AddDietPlanScreen /></ProtectedRoute>} />
             <Route path="/diet-plan/:mealId" element={<ProtectedRoute><MealDetailScreen /></ProtectedRoute>} />
             <Route path="/exams" element={<ProtectedRoute><ExamsScreen /></ProtectedRoute>} />
-            <Route path="/weekly-challenges" element={<ProtectedRoute><div>Weekly Challenges (Component Missing)</div></ProtectedRoute>} />
+            <Route path="/weekly-challenges" element={<ProtectedRoute><WeeklyChallengesScreen/></ProtectedRoute>} />
             <Route path="/winners" element={<ProtectedRoute><WinnersScreen /></ProtectedRoute>} />
             <Route path="/chat" element={<ProtectedRoute><ChatScreen /></ProtectedRoute>} />
             <Route path="/user-details/:userId" element={<ProtectedRoute><UserDetailsTable /></ProtectedRoute>} />
