@@ -45,6 +45,7 @@ const ChatScreen = lazy(() => import('./screens/chatScreen'));
 const WinnersScreen = lazy(() => import('./screens/winners'));
 const ProtectedRoute = lazy(() => import('./components/ProtectedRoute'));
 const UserDetailsTable = lazy(() => import('./components/UserDetailsTable'));
+const ParticipantsScreen = lazy(() => import('./screens/ParticipantsScreen')); // Newly added
 
 function App() {
   console.log({
@@ -56,6 +57,7 @@ function App() {
     LevelBadgesScreen,
     ExamsScreen,
     UserDetailsTable,
+    ParticipantsScreen, // Added to console log for verification
   });
   return (
     <div className="App">
@@ -77,13 +79,14 @@ function App() {
             <Route path="/diet-plan/add" element={<ProtectedRoute><AddDietPlanScreen /></ProtectedRoute>} />
             <Route path="/diet-plan/:mealId" element={<ProtectedRoute><MealDetailScreen /></ProtectedRoute>} />
             <Route path="/exams" element={<ProtectedRoute><ExamsScreen /></ProtectedRoute>} />
-            <Route path="/weekly-challenges" element={<ProtectedRoute><WeeklyChallengesScreen/></ProtectedRoute>} />
+            <Route path="/weekly-challenges" element={<ProtectedRoute><WeeklyChallengesScreen /></ProtectedRoute>} />
             <Route path="/winners" element={<ProtectedRoute><WinnersScreen /></ProtectedRoute>} />
             <Route path="/chat" element={<ProtectedRoute><ChatScreen /></ProtectedRoute>} />
             <Route path="/user-details/:userId" element={<ProtectedRoute><UserDetailsTable /></ProtectedRoute>} />
             <Route path="/assign-workout/:userId" element={<ProtectedRoute><div>Assign Workout (Component Missing)</div></ProtectedRoute>} />
             <Route path="/assign-diet-plan/:userId" element={<ProtectedRoute><div>Assign Diet Plan (Component Missing)</div></ProtectedRoute>} />
             <Route path="/assign-test/:userId" element={<ProtectedRoute><div>Assign Test (Component Missing)</div></ProtectedRoute>} />
+            <Route path="/participants/:challengeId" element={<ProtectedRoute><ParticipantsScreen /></ProtectedRoute>} /> {/* New route */}
           </Routes>
         </Suspense>
       </ErrorBoundary>

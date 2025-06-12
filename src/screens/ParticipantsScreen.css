@@ -1,0 +1,108 @@
+.participants-container {
+  display: flex;
+  min-height: 100vh;
+}
+
+.side-bar-container {
+  flex: 0 0 250px;
+}
+
+.main-content {
+  flex: 1;
+  padding: 20px;
+}
+
+.participants-section {
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.participants-section h2 {
+  margin-bottom: 20px;
+  font-size: 24px;
+  color: #333;
+}
+
+.back-button {
+  display: inline-block;
+  padding: 8px 16px;
+  background-color: #ff9800;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-bottom: 20px;
+}
+
+.back-button:hover {
+  background-color: #f57c00;
+}
+
+.participants-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+.participants-table th,
+.participants-table td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+.participants-table th {
+  background-color: #f4f4f4;
+  font-weight: bold;
+}
+
+.participants-table tr:hover {
+  background-color: #f5f5f5;
+}
+
+.video-row, .score-row, .feedback-row, .action-row {
+  margin: 5px 0;
+}
+
+.play-button {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  background-color: #ff9800;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-right: 5px;
+}
+
+.play-button:hover {
+  background-color: #f57c00;
+}
+
+.submit-score-btn, .submit-feedback-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin: 5px 0;
+}
+
+.submit-score-btn:hover, .submit-feedback-btn:hover {
+  background-color: #45a049;
+}
+
+input[type="number"], input[type="text"] {
+  padding: 5px;
+  margin-left: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
