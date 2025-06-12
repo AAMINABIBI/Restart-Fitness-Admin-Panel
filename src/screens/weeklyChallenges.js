@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db, storage } from '../firebase';
-import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, serverTimestamp } from 'firebase/firestore';
+import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, serverTimestamp, getDoc } from 'firebase/firestore';
 import { ref as storageRef, uploadBytesResumable, getDownloadURL, deleteObject } from 'firebase/storage';
 import { Timestamp } from 'firebase/firestore';
 import { ToastContainer, toast } from 'react-toastify';
@@ -9,13 +9,13 @@ import 'react-toastify/dist/ReactToastify.css';
 import TopBar from '../components/topBar';
 import SideBar from '../components/SideBar';
 import './WeeklyChallengesScreen.css';
-import { FaEdit, FaTrash } from "react-icons/fa";
+import { FaEdit, FaTrash, FaUsers, FaCheck, FaPlay } from "react-icons/fa";
 
 function WeeklyChallengesScreen() {
   const navigate = useNavigate();
   const [challenges, setChallenges] = useState([]);
-  const [workouts, setWorkouts] = useState([]); // For video selection
-  const [expandedChallenge, setExpandedChallenge] = useState(null); // Track expanded rounds
+  const [workouts, setWorkouts] = useState([]);
+  const [expandedChallenge, setExpandedChallenge] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(5);
@@ -38,21 +38,24 @@ function WeeklyChallengesScreen() {
   });
   const [loading, setLoading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [selectedParticipants, setSelectedParticipants] = useState(null);
 
-  // Fetch challenges and workouts
   useEffect(() => {
     const fetchChallenges = async () => {
       try {
         const querySnapshot = await getDocs(collection(db, 'weeklyChallenges'));
-        const challengesList = querySnapshot.docs.map(doc => {
+        const challengesList = await Promise.all(querySnapshot.docs.map(async (doc) => {
           const data = doc.data();
+          const participantsSnapshot = await getDocs(collection(db, 'weeklyChallenges', doc.id, 'participants'));
+          const participants = participantsSnapshot.docs.map(p => ({ id: p.id, ...p.data() }));
           return {
             id: doc.id,
             ...data,
             createdAt: data.createdAt instanceof Timestamp ? data.createdAt : null,
             updatedAt: data.updatedAt instanceof Timestamp ? data.updatedAt : null,
+            participantsCount: participants.length,
           };
-        });
+        }));
         setChallenges(challengesList);
       } catch (err) {
         console.error('Error fetching challenges:', err.message);
@@ -75,18 +78,15 @@ function WeeklyChallengesScreen() {
     fetchWorkouts();
   }, []);
 
-  // Handle search
   const handleSearch = (e) => {
     setSearchTerm(e.target.value);
     setCurrentPage(1);
   };
 
-  // Toggle rounds visibility
   const toggleRounds = (challengeId) => {
     setExpandedChallenge(expandedChallenge === challengeId ? null : challengeId);
   };
 
-  // Handle form input changes
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -95,7 +95,6 @@ function WeeklyChallengesScreen() {
     }));
   };
 
-  // Handle new round input changes
   const handleRoundInputChange = (e) => {
     const { name, value } = e.target;
     setNewRound((prev) => ({
@@ -104,11 +103,10 @@ function WeeklyChallengesScreen() {
     }));
   };
 
-  // Handle video file selection for a round
   const handleVideoFileChange = (e) => {
     if (e.target.files.length > 0) {
       const file = e.target.files[0];
-      if (file.size > 50 * 1024 * 1024) { // 50MB limit
+      if (file.size > 50 * 1024 * 1024) {
         toast.error('Video file size must be less than 50MB.', { autoClose: 3000 });
         return;
       }
@@ -125,7 +123,6 @@ function WeeklyChallengesScreen() {
     }
   };
 
-  // Add a new round to the form
   const addRound = () => {
     if (!newRound.roundTitle || (!newRound.videoUrl && !newRound.videoFile)) {
       toast.error('Please provide a round title and either upload a video or select one.', { autoClose: 3000 });
@@ -155,7 +152,6 @@ function WeeklyChallengesScreen() {
     });
   };
 
-  // Upload video to Firebase Storage
   const uploadVideo = async (file) => {
     const storageReference = storageRef(storage, `weeklyChallengesSubmittedVideos/${Date.now()}_${file.name}`);
     const uploadTask = uploadBytesResumable(storageReference, file);
@@ -180,7 +176,6 @@ function WeeklyChallengesScreen() {
     });
   };
 
-  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -191,7 +186,6 @@ function WeeklyChallengesScreen() {
 
     setLoading(true);
     try {
-      // Upload videos for rounds if necessary
       const roundsWithUploadedVideos = await Promise.all(
         formData.rounds.map(async (round) => {
           if (round.videoFile) {
@@ -214,14 +208,12 @@ function WeeklyChallengesScreen() {
       };
 
       if (formData.id) {
-        // Update existing challenge
         await updateDoc(doc(db, 'weeklyChallenges', formData.id), challengeData);
-        setChallenges(challenges.map(c => c.id === formData.id ? { id: formData.id, ...challengeData } : c));
+        setChallenges(challenges.map(c => c.id === formData.id ? { id: formData.id, ...challengeData, participantsCount: c.participantsCount } : c));
         toast.success('Challenge updated successfully!', { autoClose: 3000 });
       } else {
-        // Add new challenge
         const docRef = await addDoc(collection(db, 'weeklyChallenges'), challengeData);
-        setChallenges([...challenges, { id: docRef.id, ...challengeData }]);
+        setChallenges([...challenges, { id: docRef.id, ...challengeData, participantsCount: 0 }]);
         toast.success('Challenge added successfully!', { autoClose: 3000 });
       }
 
@@ -251,13 +243,12 @@ function WeeklyChallengesScreen() {
     }
   };
 
-  // Handle edit challenge
   const handleEditChallenge = (challenge) => {
     setFormData({
       id: challenge.id,
       title: challenge.title,
       description: challenge.description,
-      startDate: challenge.startDate.split('T')[0], // Convert ISO to YYYY-MM-DD
+      startDate: challenge.startDate.split('T')[0],
       endDate: challenge.endDate.split('T')[0],
       status: challenge.status,
       rounds: challenge.rounds.map(round => ({
@@ -278,14 +269,13 @@ function WeeklyChallengesScreen() {
     setModalOpen(true);
   };
 
-  // Handle add new challenge
   const handleAddChallenge = () => {
     setFormData({
       id: null,
       title: '',
       description: '',
       startDate: new Date().toISOString().split('T')[0],
-      endDate: new Date(new Date().setDate(new Date().getDate() + 7)).toISOString().split('T')[0], // Default to 7 days later
+      endDate: new Date(new Date().setDate(new Date().getDate() + 7)).toISOString().split('T')[0],
       status: 'active',
       rounds: [],
     });
@@ -299,22 +289,17 @@ function WeeklyChallengesScreen() {
     setModalOpen(true);
   };
 
-  // Handle delete challenge
   const handleDeleteChallenge = async (challengeId, rounds) => {
     if (!window.confirm('Are you sure you want to delete this challenge?')) return;
 
     try {
-      // Delete videos from Firebase Storage
       for (const round of rounds) {
         if (round.videoUrl && round.videoUrl.includes('weeklyChallengesSubmittedVideos')) {
           const videoRef = storageRef(storage, round.videoUrl);
-          await deleteObject(videoRef).catch(err => {
-            console.warn('Failed to delete video:', err.message);
-          });
+          await deleteObject(videoRef).catch(err => console.warn('Failed to delete video:', err.message));
         }
       }
 
-      // Delete the challenge from Firestore
       await deleteDoc(doc(db, 'weeklyChallenges', challengeId));
       setChallenges(challenges.filter(c => c.id !== challengeId));
       toast.success('Challenge deleted successfully!', { autoClose: 3000 });
@@ -324,7 +309,53 @@ function WeeklyChallengesScreen() {
     }
   };
 
-  // Filter and paginate challenges
+  const handleViewParticipants = async (challengeId) => {
+    try {
+      const participantsSnapshot = await getDocs(collection(db, 'weeklyChallenges', challengeId, 'participants'));
+      const participants = participantsSnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+        joinedAt: doc.data().joinedAt instanceof Timestamp ? doc.data().joinedAt.toDate() : null,
+      }));
+      setSelectedParticipants({ challengeId, participants });
+    } catch (err) {
+      console.error('Error fetching participants:', err.message);
+      toast.error('Failed to load participants.', { autoClose: 3000 });
+    }
+  };
+
+  const handleSaveFeedback = async (participantId, challengeId, roundIndex, score, feedback) => {
+    try {
+      const participantRef = doc(db, 'weeklyChallenges', challengeId, 'participants', participantId);
+      const participantDoc = await getDoc(participantRef);
+      if (participantDoc.exists()) {
+        const data = participantDoc.data();
+        const updatedVideoUrls = { ...data.videoUrls };
+        const roundKey = `round${roundIndex + 1}`;
+        updatedVideoUrls[roundKey] = {
+          ...(updatedVideoUrls[roundKey] || { url: data.videoUrls[roundKey]?.url || '' }),
+          score: score !== null ? score : updatedVideoUrls[roundKey]?.score,
+          feedback: feedback || updatedVideoUrls[roundKey]?.feedback,
+        };
+        await updateDoc(participantRef, {
+          videoUrls: updatedVideoUrls,
+          updatedAt: serverTimestamp(),
+        });
+        toast.success('Feedback and score saved successfully!', { autoClose: 3000 });
+        handleViewParticipants(challengeId);
+      }
+    } catch (err) {
+      console.error('Error saving feedback:', err.message);
+      toast.error('Failed to save feedback.', { autoClose: 3000 });
+    }
+  };
+
+  const handlePlayVideo = (videoUrl) => {
+    if (videoUrl) {
+      window.open(videoUrl, '_blank');
+    }
+  };
+
   const filteredChallenges = challenges.filter(challenge =>
     challenge.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -352,7 +383,6 @@ function WeeklyChallengesScreen() {
     return pageNumbers;
   };
 
-  // Helper function to safely convert Timestamp to Date string
   const formatTimestamp = (timestamp) => {
     if (timestamp && typeof timestamp.toDate === 'function') {
       return new Date(timestamp.toDate()).toLocaleString();
@@ -397,6 +427,7 @@ function WeeklyChallengesScreen() {
                     <th>End Date</th>
                     <th>Status</th>
                     <th>Rounds</th>
+                    <th>Participants</th>
                     <th>Created At</th>
                     <th>Updated At</th>
                     <th>Edit</th>
@@ -421,6 +452,14 @@ function WeeklyChallengesScreen() {
                             {expandedChallenge === challenge.id ? 'Hide Rounds' : 'View Rounds'}
                           </button>
                         </td>
+                        <td>
+                          <button
+                            className="view-participants-button"
+                            onClick={() => handleViewParticipants(challenge.id)}
+                          >
+                            <FaUsers /> {challenge.participantsCount}
+                          </button>
+                        </td>
                         <td>{formatTimestamp(challenge.createdAt)}</td>
                         <td>{formatTimestamp(challenge.updatedAt)}</td>
                         <td>
@@ -435,21 +474,33 @@ function WeeklyChallengesScreen() {
                       </tr>
                       {expandedChallenge === challenge.id && (
                         <tr>
-                          <td colSpan="11">
+                          <td colSpan="12">
                             <div className="rounds-dropdown">
                               {challenge.rounds.map((round, idx) => (
                                 <div key={idx} className="round-entry">
                                   <h5>{round.roundTitle}</h5>
                                   <p>Round Number: {round.roundNumber}</p>
                                   <p>Reps: {round.reps}</p>
-                                  <p>
-                                    Video:{' '}
-                                    {round.videoUrl ? (
-                                      <a href={round.videoUrl} target="_blank" rel="noopener noreferrer">
-                                        View Video
-                                      </a>
-                                    ) : (
-                                      'No video'
+                                  <p>Videos:
+                                    {Array.isArray(round.videoUrl) ? round.videoUrl.map((url, i) => (
+                                      <span key={i}>
+                                        <button
+                                          className="play-button"
+                                          onClick={() => handlePlayVideo(url)}
+                                        >
+                                          <FaPlay /> Play Video {i + 1}
+                                        </button>
+                                        {i < round.videoUrl.length - 1 ? ', ' : ''}
+                                      </span>
+                                    )) : (
+                                      round.videoUrl ? (
+                                        <button
+                                          className="play-button"
+                                          onClick={() => handlePlayVideo(round.videoUrl)}
+                                        >
+                                          <FaPlay /> Play Video
+                                        </button>
+                                      ) : 'No video'
                                     )}
                                   </p>
                                 </div>
@@ -469,7 +520,6 @@ function WeeklyChallengesScreen() {
               )}
             </>
           )}
-          {/* Inline Modal */}
           {modalOpen && (
             <div className="modal-overlay">
               <div className="modal-content">
@@ -540,9 +590,12 @@ function WeeklyChallengesScreen() {
                           <p>
                             Video:{' '}
                             {round.videoUrl ? (
-                              <a href={round.videoUrl} target="_blank" rel="noopener noreferrer">
-                                View Video
-                              </a>
+                              <button
+                                className="play-button"
+                                onClick={() => handlePlayVideo(round.videoUrl)}
+                              >
+                                <FaPlay /> Play Video
+                              </button>
                             ) : (
                               'No video'
                             )}
@@ -621,6 +674,130 @@ function WeeklyChallengesScreen() {
                     </button>
                   </div>
                 </form>
+              </div>
+            </div>
+          )}
+          {selectedParticipants && (
+            <div className="modal-overlay">
+              <div className="modal-content">
+                <h2>Participants for {challenges.find(c => c.id === selectedParticipants.challengeId)?.title}</h2>
+                <button className="close-modal" onClick={() => setSelectedParticipants(null)}>Close</button>
+                <table className="participants-table">
+                  <thead>
+                    <tr>
+                      <th>User ID</th>
+                      <th>Joined At</th>
+                      <th>Status</th>
+                      <th>Rounds Completed</th>
+                      <th>Videos</th>
+                      <th>Score</th>
+                      <th>Feedback</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {selectedParticipants.participants.map((participant) => (
+                      <tr key={participant.id}>
+                        <td>{participant.userId}</td>
+                        <td>{participant.joinedAt?.toLocaleString() || 'N/A'}</td>
+                        <td>{participant.status}</td>
+                        <td>{participant.roundsCompleted.join(', ') || 'None'}</td>
+                        <td>
+                          {participant.roundsCompleted.map((roundIdx) => {
+                            const roundKey = `round${roundIdx + 1}`;
+                            const videoUrl = participant.videoUrls[roundKey]?.url;
+                            return (
+                              <div key={roundIdx} className="video-row">
+                                Round {roundIdx + 1}:{' '}
+                                {videoUrl ? (
+                                  <button
+                                    className="play-button"
+                                    onClick={() => handlePlayVideo(videoUrl)}
+                                  >
+                                    <FaPlay /> Play Video
+                                  </button>
+                                ) : 'No video'}
+                              </div>
+                            );
+                          })}
+                        </td>
+                        <td>
+                          {participant.roundsCompleted.map((roundIdx) => {
+                            const roundKey = `round${roundIdx + 1}`;
+                            return (
+                              <div key={roundIdx} className="score-row">
+                                Round {roundIdx + 1}:{' '}
+                                <input
+                                  type="number"
+                                  min="0"
+                                  max="100"
+                                  placeholder="Score"
+                                  defaultValue={participant.videoUrls[roundKey]?.score || ''}
+                                  onChange={(e) => {
+                                    const newScore = parseInt(e.target.value) || null;
+                                    setSelectedParticipants(prev => ({
+                                      ...prev,
+                                      participants: prev.participants.map(p =>
+                                        p.id === participant.id ? { ...p, tempScore: { ...p.tempScore, [roundKey]: newScore } } : p
+                                      ),
+                                    }));
+                                  }}
+                                />
+                              </div>
+                            );
+                          })}
+                        </td>
+                        <td>
+                          {participant.roundsCompleted.map((roundIdx) => {
+                            const roundKey = `round${roundIdx + 1}`;
+                            return (
+                              <div key={roundIdx} className="feedback-row">
+                                Round {roundIdx + 1}:{' '}
+                                <input
+                                  type="text"
+                                  placeholder="Feedback"
+                                  defaultValue={participant.videoUrls[roundKey]?.feedback || ''}
+                                  onChange={(e) => {
+                                    const newFeedback = e.target.value;
+                                    setSelectedParticipants(prev => ({
+                                      ...prev,
+                                      participants: prev.participants.map(p =>
+                                        p.id === participant.id ? { ...p, tempFeedback: { ...p.tempFeedback, [roundKey]: newFeedback } } : p
+                                      ),
+                                    }));
+                                  }}
+                                />
+                              </div>
+                            );
+                          })}
+                        </td>
+                        <td>
+                          {participant.roundsCompleted.map((roundIdx) => {
+                            const roundKey = `round${roundIdx + 1}`;
+                            return (
+                              <div key={roundIdx} className="action-row">
+                                <button
+                                  className="submit-score-btn"
+                                  onClick={() => handleSaveFeedback(participant.id, selectedParticipants.challengeId, roundIdx, participant.tempScore?.[roundKey] || null, null)}
+                                  disabled={!participant.tempScore?.[roundKey] && participant.tempScore?.[roundKey] !== 0}
+                                >
+                                  <FaCheck /> Submit Score
+                                </button>
+                                <button
+                                  className="submit-feedback-btn"
+                                  onClick={() => handleSaveFeedback(participant.id, selectedParticipants.challengeId, roundIdx, null, participant.tempFeedback?.[roundKey] || '')}
+                                  disabled={!participant.tempFeedback?.[roundKey]}
+                                >
+                                  <FaCheck /> Submit Feedback
+                                </button>
+                              </div>
+                            );
+                          })}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             </div>
           )}
