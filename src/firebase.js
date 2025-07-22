@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth, setPersistence, browserLocalPersistence, browserSessionPersistence } from 'firebase/auth';
+import { getAuth, setPersistence, browserLocalPersistence } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 
@@ -13,9 +13,17 @@ const firebaseConfig = {
   measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENT_ID,
 };
 
-console.log('Firebase Config:', firebaseConfig); // Log to verify
+if (process.env.NODE_ENV !== 'production') {
+  console.log('Firebase Config:', firebaseConfig);
+}
+
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
+setPersistence(auth, browserLocalPersistence).catch((error) => {
+  if (process.env.NODE_ENV !== 'production') {
+    console.error('Error setting persistence:', error);
+  }
+});
 const db = getFirestore(app);
 const storage = getStorage(app);
 

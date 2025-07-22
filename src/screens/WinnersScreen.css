@@ -1,125 +1,195 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
 .winners-screen-container {
-    display: flex;
-    min-height: 100vh;
-  }
-  
-  .side-bar-container {
-    width: 280px;
-    flex-shrink: 0;
-  }
-  
-  .main-content {
-    flex-grow: 1;
-    display: flex;
+  display: flex;
+  min-height: 100vh;
+  font-family: 'Arial', sans-serif;
+  background-color: #f5f7fa;
+}
+
+.side-bar-container {
+  width: 250px;
+  background-color: #ffffff;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.main-content {
+  flex: 1;
+  padding: 1.5rem;
+}
+
+.winners-section {
+  max-width: 1200px;
+  margin: 0 auto;
+  background: #ffffff;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.winners-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.information {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.week-dropdown {
+  padding: 0.75rem;
+  border: 1px solid #dfe6e9;
+  border-radius: 6px;
+  font-size: 1rem;
+  background-color: #f9fbfc;
+  cursor: pointer;
+  transition: border-color 0.3s;
+}
+
+.week-dropdown:focus {
+  border-color: #d2b48c;
+  outline: none;
+}
+
+.top-winners {
+  background-color: #ffffff;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.top-winners-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #2c3e50;
+  margin: 1rem;
+}
+
+.winners-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.winners-table th,
+.winners-table td {
+  padding: 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid #dfe6e9;
+  font-size: 0.9rem;
+  color: #2d3436;
+}
+
+.winners-table th {
+  background: linear-gradient(135deg, #d2b48c, #b89778);
+  color: #fff;
+  font-weight: 600;
+}
+
+.winners-table tbody tr:nth-child(1) {
+  background-color: #fdf6ec;
+}
+
+.winners-table tbody tr:nth-child(2) {
+  background-color: #f9f0e5;
+}
+
+.winners-table tbody tr:nth-child(3) {
+  background-color: #f5e9dc;
+}
+
+.position-badge {
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.position-badge.position-1st {
+  background-color: #d2b48c;
+  color: #fff;
+}
+
+.position-badge.position-2nd {
+  background-color: #b89778;
+  color: #fff;
+}
+
+.position-badge.position-3rd {
+  background-color: #a68a6a;
+  color: #fff;
+}
+
+.action-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.1rem;
+}
+
+.action-button.view-button {
+  color: #d2b48c;
+}
+
+.action-button.view-button:hover {
+  color: #b89778;
+}
+
+/* Responsive Design */
+@media (max-width: 767px) {
+  .winners-screen-container {
     flex-direction: column;
-    background-color: #f0f2f5;
   }
-  
-  .winners-section {
-    padding: 20px;
-  }
-  
-  .winners-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-    background-color: #f8f9fa;
-    padding: 10px 20px;
-    border-radius: 8px;
-  }
-  
-  .information {
-    font-size: 1.5rem;
-    font-weight: bold;
-    color: #333;
-  }
-  
-  .header-actions {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  
-  .week-dropdown {
-    padding: 8px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    background-color: #ffffff;
-    cursor: pointer;
-  }
-  
-  .top-winners {
-    background-color: #fff;
-    border-radius: 8px;
-    overflow: hidden;
-  }
-  
-  .top-winners-title {
-    font-size: 1.2rem;
-    font-weight: bold;
-    color: #333;
-    margin: 15px;
-  }
-  
-  .winners-table {
+
+  .side-bar-container {
     width: 100%;
-    border-collapse: collapse;
-    margin: 20px
+    height: auto;
   }
-  
+
+  .winners-section {
+    padding: 1rem;
+  }
+
+  .winners-table {
+    display: block;
+    overflow-x: auto;
+  }
+
   .winners-table th,
   .winners-table td {
-    padding: 12px 15px;
-    text-align: left;
+    font-size: 0.8rem;
+    padding: 0.5rem;
   }
-  
-  .winners-table th {
-    background-color: #AE8240;
-    color: #ffffff;
-    font-weight: bold;
+
+  .header-actions {
+    flex-direction: column;
+    gap: 0.5rem;
   }
-  
-  .winners-table tbody tr:nth-child(1) {
-    background-color: #f8e1e9; /* Light pink for 1st place */
+
+  .week-dropdown {
+    width: 100%;
   }
-  
-  .winners-table tbody tr:nth-child(2) {
-    background-color: #97d297; /* Light green for 2nd place */
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .winners-section {
+    max-width: 700px;
+    padding: 1.25rem;
   }
-  
-  .winners-table tbody tr:nth-child(3) {
-    background-color: #954343; /* Light teal for 3rd place */
+
+  .week-dropdown {
+    max-width: 200px;
   }
-  
-  .position-badge {
-    padding: 5px 10px;
-    border-radius: 5px;
-    font-weight: bold;
-  }
-  
-  .position-badge.position-1st {
-    background-color: #f8e1e9;
-    color: #333;
-  }
-  
-  .position-badge.position-2nd {
-    background-color: #e6f0e6;
-    color: #333;
-  }
-  
-  .position-badge.position-3rd {
-    background-color: #e6ecea;
-    color: #333;
-  }
-  
-  .action-button {
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-size: 1rem;
-  }
-  
-  .action-button.view-button {
-    color: #d2b48c;
-  }
+}

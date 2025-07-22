@@ -14,7 +14,10 @@ function RegisterAdminScreen() {
     confirmPassword: '',
   });
   const [error, setError] = useState(null);
-const [isLoading,setisLoading]=useState(false)
+  const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData({
@@ -46,46 +49,91 @@ const [isLoading,setisLoading]=useState(false)
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
-setisLoading(true)
+    setIsLoading(true);
+
     if (!validateForm()) {
+      setIsLoading(false);
       return;
     }
 
     try {
+      if (process.env.NODE_ENV !== 'production') {
+        console.log('Attempting to create user with email:', formData.email);
+      }
       const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
       const user = userCredential.user;
-
-      // Check if the user already exists in adminUsers (in case of partial registration)
-      const adminDocRef = doc(db, 'adminUsers', user.uid);
-      const adminDoc = await getDoc(adminDocRef);
-
-      if (!adminDoc.exists()) {
-        // Save admin data in adminUsers collection
-        await setDoc(adminDocRef, {
-          email: formData.email,
-          name: formData.email.split('@')[0],
-          profileCompleted: false,
-          isAdmin: true,
-          createdAt: serverTimestamp(),
-        });
-        console.log('Admin registered successfully:', formData.email);
-      } else {
-        console.log('Admin already exists in adminUsers, proceeding to login.');
+      if (process.env.NODE_ENV !== 'production') {
+        console.log('User created in Firebase Auth:', { uid: user.uid, email: user.email });
       }
-setisLoading(false)
+
+      const adminDocRef = doc(db, 'adminUsers', user.uid);
+      try {
+        const adminDoc = await getDoc(adminDocRef);
+        if (!adminDoc.exists()) {
+          if (process.env.NODE_ENV !== 'production') {
+            console.log('Attempting to create adminUsers document for:', user.uid);
+          }
+          await setDoc(adminDocRef, {
+            email: formData.email,
+            name: formData.email.split('@')[0],
+            profileCompleted: false,
+            isAdmin: true,
+            createdAt: serverTimestamp(),
+          });
+          if (process.env.NODE_ENV !== 'production') {
+            console.log('Admin registered successfully in Firestore:', formData.email);
+          }
+        } else {
+          if (process.env.NODE_ENV !== 'production') {
+            console.log('Admin already exists in adminUsers:', formData.email);
+          }
+        }
+      } catch (firestoreError) {
+        console.error('Firestore error details:', {
+          message: firestoreError.message,
+          code: firestoreError.code,
+          details: firestoreError.details,
+        });
+        // Temporarily skip user deletion for debugging
+        /*
+        try {
+          await user.delete();
+          if (process.env.NODE_ENV !== 'production') {
+            console.log('User deleted due to Firestore error:', user.uid);
+          }
+        } catch (deleteError) {
+          console.error('User deletion error:', {
+            message: deleteError.message,
+            code: deleteError.code,
+          });
+          setError('Failed to clean up registration. Please contact support.');
+          setIsLoading(false);
+          return;
+        }
+        */
+        setError('Failed to save admin data to Firestore. User may be registered in Authentication. Try logging in.');
+        setIsLoading(false);
+        return;
+      }
+      setIsLoading(false);
       navigate('/');
     } catch (err) {
-      console.error('Registration error:', err.message);
+      if (process.env.NODE_ENV !== 'production') {
+        console.error('Registration error:', {
+          message: err.message,
+          code: err.code,
+        });
+      }
       if (err.code === 'auth/email-already-in-use') {
-        setError('This email is already registered with Firebase Authentication. Please use a different email or log in.');
+        setError('This email is already registered. Please use a different email or log in.');
       } else if (err.code === 'auth/invalid-email') {
         setError('Invalid email format.');
       } else if (err.code === 'auth/weak-password') {
-        setError('Password is too weak. It must be at least 6 characters long.');
+        setError('Password must be at least 6 characters long.');
       } else {
         setError('Failed to register. Please try again later.');
       }
-      setisLoading(false)
+      setIsLoading(false);
     }
   };
 
@@ -101,39 +149,63 @@ setisLoading(false)
         </div>
         <h4>Create a new admin account</h4>
         {error && <p className="error-message">{error}</p>}
+        {isLoading && <div className="spinner" aria-label="Loading">Loading...</div>}
         <form onSubmit={handleSubmit}>
-          {
-            isLoading &&<div className='spinner'>Loading...</div>
-          }
           <div className="form-group">
+            <label htmlFor="email">Email</label>
             <input
+              id="email"
               type="email"
               name="email"
               value={formData.email}
               onChange={handleInputChange}
               placeholder="Enter email (e.g., admin@restart.com)"
               required
+              aria-required="true"
+              autoComplete="email"
             />
           </div>
           <div className="form-group">
+            <label htmlFor="password">Password</label>
             <input
-              type="password"
+              id="password"
+              type={showPassword ? 'text' : 'password'}
               name="password"
               value={formData.password}
               onChange={handleInputChange}
               placeholder="Enter password"
               required
+              aria-required="true"
+              autoComplete="new-password"
             />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              aria-label={showPassword ? 'Hide password' : 'Show password'}
+            >
+              {showPassword ? 'Hide' : 'Show'}
+            </button>
           </div>
           <div className="form-group">
+            <label htmlFor="confirmPassword">Confirm Password</label>
             <input
-              type="password"
+              id="confirmPassword"
+              type={showConfirmPassword ? 'text' : 'password'}
               name="confirmPassword"
               value={formData.confirmPassword}
               onChange={handleInputChange}
               placeholder="Confirm password"
               required
+              aria-required="true"
+              autoComplete="new-password"
             />
+            <button
+              type="button"
+              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+              aria-label={showConfirmPassword ? 'Hide confirm password' : 'Show confirm password'}
+            >
+              {showConfirmPassword ? 'Hide' : 'Show'}
+            </button>
           </div>
           <button type="submit" className="register-button">
             Register
@@ -141,9 +213,14 @@ setisLoading(false)
         </form>
         <p className="login-redirect">
           Already have an account?{' '}
-          <span onClick={handleLoginRedirect} className="login-link">
+          <button
+            type="button"
+            onClick={handleLoginRedirect}
+            className="login-link"
+            aria-label="Navigate to login page"
+          >
             Login here
-          </span>
+          </button>
         </p>
         <div className="copyright">
           © 2025 Andrews | ALL RIGHT RESERVED

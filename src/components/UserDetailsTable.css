@@ -1,308 +1,163 @@
-.user-details-container {
-  padding: 20px;
-}
-
-.details-table, .assignment-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-bottom: 20px;
-}
-
-.details-table th, .details-table td,
-.assignment-table th, .assignment-table td {
-  border: 1px solid #ddd;
-  padding: 8px;
-  text-align: left;
-}
-
-.details-table th, .assignment-table th {
-  background-color: #f2f2f2;
-}
-
-.assignment-buttons {
-  margin-bottom: 20px;
-}
-
-.assignment-buttons button {
-  padding: 10px 20px;
-  margin-right: 10px;
-  background-color: #008CBA;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.assignment-buttons button:hover {
-  background-color: #007B9A;
-}
-
-.assignment-section {
-  margin-bottom: 20px;
-}
-
-.assignment-section button {
-  padding: 10px 20px;
-  background-color: #4CAF50;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.assignment-section button:hover {
-  background-color: #45a049;
-}
-
-.user-details-container {
-  padding: 20px;
-}
-
-.details-table, .assignment-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-bottom: 20px;
-}
-
-.details-table th, .details-table td,
-.assignment-table th, .assignment-table td {
-  border: 1px solid #ddd;
-  padding: 8px;
-  text-align: left;
-}
-
-.details-table th, .assignment-table th {
-  background-color: #f2f2f2;
-}
-
-.assignment-buttons {
-  margin-bottom: 20px;
-}
-
-.assignment-buttons button {
-  padding: 10px 20px;
-  margin-right: 10px;
-  background-color: #008CBA;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.assignment-buttons button:hover {
-  background-color: #007B9A;
-}
-
-.assignment-section {
-  margin-bottom: 20px;
-}
-
-.assignment-section button {
-  padding: 10px 20px;
-  background-color: #4CAF50;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.assignment-section button:hover {
-  background-color: #45a049;
-}
-
-.modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.modal-content {
-  background-color: white;
-  padding: 20px;
-  border-radius: 5px;
-  width: 400px;
-  max-height: 80vh;
-  overflow-y: auto;
-}
-
-.form-group {
-  margin-bottom: 15px;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: 5px;
-}
-
-.form-group input,
-.form-group select {
-  width: 100%;
-  padding: 8px;
+* {
+  margin: 0;
+  padding: 0;
   box-sizing: border-box;
 }
 
-.modal-buttons {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-}
-
-.modal-buttons button {
-  padding: 10px 20px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.modal-buttons button[type="submit"] {
-  background-color: #4CAF50;
-  color: white;
-}
-
-.modal-buttons button[type="submit"]:hover {
-  background-color: #45a049;
-}
-
-.modal-buttons button[type="button"] {
-  background-color: #f44336;
-  color: white;
-}
-
-.modal-buttons button[type="button"]:hover {
-  background-color: #da190b;
-}
-
-
 .user-details-container {
-  padding: 20px;
+  max-width: 1200px;
+  margin: 1rem auto;
+  padding: 1.5rem;
+  background: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  font-family: 'Arial', sans-serif;
+}
+
+.user-details-container h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 1.5rem;
 }
 
 .details-section {
-  margin-bottom: 20px;
+  margin-bottom: 1.5rem;
 }
 
-.details-table, .assignment-table {
+.details-section h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 1rem;
+}
+
+.details-table,
+.assignment-table {
   width: 100%;
   border-collapse: collapse;
-  margin-bottom: 20px;
+  margin-bottom: 1.5rem;
 }
 
-.details-table th, .details-table td,
-.assignment-table th, .assignment-table td {
-  border: 1px solid #ddd;
-  padding: 8px;
+.details-table th,
+.details-table td,
+.assignment-table th,
+.assignment-table td {
+  border: 1px solid #dfe6e9;
+  padding: 0.75rem;
   text-align: left;
+  font-size: 0.9rem;
+  color: #2d3436;
 }
 
-.details-table th, .assignment-table th {
-  background-color: #f2f2f2;
+.details-table th,
+.assignment-table th {
+  background: linear-gradient(135deg, #d2b48c, #b89778);
+  color: #fff;
+  font-weight: 600;
 }
 
 .assignment-buttons {
-  margin-bottom: 20px;
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
 }
 
 .assignment-buttons button {
-  padding: 10px 20px;
-  margin-right: 10px;
-  background-color: #008CBA;
-  color: white;
+  padding: 0.75rem 1.5rem;
+  background: linear-gradient(135deg, #d2b48c, #b89778);
+  color: #fff;
   border: none;
-  border-radius: 4px;
+  border-radius: 6px;
   cursor: pointer;
+  font-size: 0.9rem;
+  transition: transform 0.2s, box-shadow 0.3s;
 }
 
 .assignment-buttons button:hover {
-  background-color: #007B9A;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .assignment-section {
-  margin-bottom: 20px;
+  margin-bottom: 1.5rem;
+}
+
+.assignment-section h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 1rem;
 }
 
 .assignment-section button {
-  padding: 10px 20px;
-  background-color: #4CAF50;
-  color: white;
+  padding: 0.75rem 1.5rem;
+  background: linear-gradient(135deg, #d2b48c, #b89778);
+  color: #fff;
   border: none;
-  border-radius: 4px;
+  border-radius: 6px;
   cursor: pointer;
+  font-size: 0.9rem;
+  transition: transform 0.2s, box-shadow 0.3s;
 }
 
 .assignment-section button:hover {
-  background-color: #45a049;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-.modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.modal-content {
-  background-color: white;
-  padding: 20px;
-  border-radius: 5px;
-  width: 400px;
-  max-height: 80vh;
-  overflow-y: auto;
-}
-
-.form-group {
-  margin-bottom: 15px;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: 5px;
-}
-
-.form-group input,
-.form-group select {
-  width: 100%;
-  padding: 8px;
-  box-sizing: border-box;
-}
-
-.modal-buttons {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-}
-
-.modal-buttons button {
-  padding: 10px 20px;
+.back-button {
+  padding: 0.75rem 1.5rem;
+  background: #b0bec5;
+  color: #fff;
   border: none;
-  border-radius: 4px;
+  border-radius: 6px;
   cursor: pointer;
+  font-size: 0.9rem;
+  transition: transform 0.2s, box-shadow 0.3s;
 }
 
-.modal-buttons button[type="submit"] {
-  background-color: #4CAF50;
-  color: white;
+.back-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-.modal-buttons button[type="submit"]:hover {
-  background-color: #45a049;
+/* Responsive Design */
+@media (max-width: 767px) {
+  .user-details-container {
+    padding: 1rem;
+  }
+
+  .details-table,
+  .assignment-table {
+    display: block;
+    overflow-x: auto;
+  }
+
+  .details-table th,
+  .details-table td,
+  .assignment-table th,
+  .assignment-table td {
+    font-size: 0.8rem;
+    padding: 0.5rem;
+  }
+
+  .assignment-buttons {
+    flex-direction: column;
+  }
+
+  .assignment-buttons button,
+  .assignment-section button,
+  .back-button {
+    width: 100%;
+    font-size: 0.8rem;
+  }
 }
 
-.modal-buttons button[type="button"] {
-  background-color: #f44336;
-  color: white;
-}
-
-.modal-buttons button[type="button"]:hover {
-  background-color: #da190b;
+@media (min-width: 768px) and (max-width: 1023px) {
+  .user-details-container {
+    max-width: 700px;
+    padding: 1.25rem;
+  }
 }

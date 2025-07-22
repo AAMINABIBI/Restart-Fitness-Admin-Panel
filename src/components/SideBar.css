@@ -1,53 +1,27 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
 .side-bar {
-  width: 280px;
-  background-color: #AE8240; /* Light brown background from the image */
-  padding: 20px;
+  width: 250px;
+  background-color: #ffffff;
+  padding: 1.5rem;
   display: flex;
   flex-direction: column;
-  height: auto; /* Change from 100vh to auto */
-  color: #ffffff;
-  /* position: fixed; Remove this line */
-  /* top: 0; */
-  /* left: 0; */
-  z-index: 10;
-  overflow-x: hidden;
+  height: auto;
+  color: #2d3436;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+  overflow-y: auto;
   scrollbar-width: thin;
-  overflow-y: auto; /* Keep the scroll if content overflows */
-  margin-right: 20px; /* Add some margin to the right to separate from main content */
 }
 
 .sidebar-logo {
-  text-align: center;
-  height: 150px;
-  width: 180px;
-  margin: 10px;
-  background-color:#f3e3d0;
-  border-radius: 80px;
-}
-
-.search-bar {
-  display: flex;
-  align-items: center;
-  border: none;
-  border-radius: 5px;
-  padding: 8px 10px;
-  margin-bottom: 20px;
-  background-color: #e6d5b8; /* Slightly lighter brown for contrast */
-}
-
-.search-icon {
-  margin-right: 8px;
-  color: #333; /* Darker color for visibility */
-}
-
-.search-bar input[type='text'] {
-  border: none;
-  outline: none;
-  flex-grow: 1;
-  font-size: 1rem;
-  padding: 5px;
-  background-color: transparent;
-  color: #333;
+  max-width: 120px;
+  width: 100%;
+  margin: 0 auto 1.5rem;
+  display: block;
 }
 
 .nav-links {
@@ -58,53 +32,64 @@
 .nav-link {
   display: flex;
   align-items: center;
-  padding: 10px 15px;
+  padding: 0.75rem 1rem;
   text-decoration: none;
-  color: #ffffff;
-  border-radius: 5px;
-  margin-bottom: 8px;
+  color: #2d3436;
+  border-radius: 6px;
+  margin-bottom: 0.5rem;
+  transition: background-color 0.3s, color 0.3s;
 }
 
 .nav-link.active {
-  background-color: #e6d5b8; /* Lighter brown for active state */
-  color: #333;
+  background: linear-gradient(135deg, #d2b48c, #b89778);
+  color: #fff;
 }
 
 .nav-icon {
-  margin-right: 10px;
-  color: #ffffff;
+  margin-right: 0.75rem;
   font-size: 1.1rem;
+  color: #2d3436;
 }
 
 .nav-link.active .nav-icon {
-  color: #333; /* Match active state text color */
-}
-
-.nav-group {
-  margin-left: 30px;
-  display: flex;
-  flex-direction: column;
-}
-
-.sub-link {
-  display: flex;
-  align-items: center;
-  padding: 8px 15px;
-  text-decoration: none;
-  color: #ffffff;
-}
-
-.dot {
-  margin-right: 8px;
-  color: #ffffff;
+  color: #fff;
 }
 
 .copyright {
   font-size: 0.8rem;
-  text-align: left;
-  color: #ffffff;
+  text-align: center;
+  color: #636e72;
+  margin-top: auto;
 }
-.sub-link.active {
-  color: #333; /* Match the active state of nav-link */
-  background-color: #e6d5b8; /* Same background as active nav-link */
+
+/* Responsive Design */
+@media (max-width: 767px) {
+  .side-bar {
+    width: 100%;
+    padding: 1rem;
+  }
+
+  .sidebar-logo {
+    max-width: 100px;
+  }
+
+  .nav-link {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.9rem;
+  }
+
+  .nav-icon {
+    font-size: 1rem;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .side-bar {
+    width: 200px;
+    padding: 1.25rem;
+  }
+
+  .sidebar-logo {
+    max-width: 110px;
+  }
 }

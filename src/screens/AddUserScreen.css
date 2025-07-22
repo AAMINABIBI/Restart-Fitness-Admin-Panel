@@ -1,123 +1,176 @@
-.add-user-screen-container {
-  display: flex;
-  height: 100vh;
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-.side-bar-container {
-  width: 250px;
-  background-color: #f8f9fa;
+.add-user-screen {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  font-family: 'Arial', sans-serif;
+  background-color: #f5f7fa;
 }
 
 .main-content {
   flex: 1;
   display: flex;
   flex-direction: column;
+  padding: 1.5rem;
 }
 
 .add-user-section {
-  padding: 20px;
-  flex: 1;
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 1.5rem;
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 .add-user-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 1.5rem;
 }
 
 .information {
   font-size: 1.5rem;
-  color: #333;
+  font-weight: 600;
+  color: #2c3e50;
 }
 
 .add-users-button {
-  background-color: #d2b48c;
+  background: linear-gradient(135deg, #d2b48c, #b89778);
   color: #fff;
   border: none;
-  padding: 10px 20px;
-  border-radius: 5px;
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
   cursor: pointer;
   font-size: 1rem;
+  transition: transform 0.2s, box-shadow 0.3s;
 }
 
 .add-users-button:hover {
-  background-color: #b89778;
-}
-
-.form-sections {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-margin-left:50px;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .form-section {
-  background-color: #fff;
-  padding:30px;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  margin:  50px;
+  padding: 1.5rem;
 }
 
 .form-section h3 {
   font-size: 1.2rem;
-  margin-bottom: 15px;
-  color: #333;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 1rem;
 }
 
 .form-group {
-  margin-bottom: 15px;
+  margin-bottom: 1rem;
 }
 
 .form-group label {
   display: block;
   font-size: 0.9rem;
-  margin-bottom: 5px;
-  color: #555;
+  font-weight: 500;
+  color: #2c3e50;
+  margin-bottom: 0.5rem;
 }
 
-.form-group input {
+.form-group input[type="text"],
+.form-group input[type="email"] {
   width: 100%;
   max-width: 400px;
-  padding: 8px;
-  border: 1px solid #ddd;
-  border-radius: 5px;
+  padding: 0.75rem;
+  border: 1px solid #dfe6e9;
+  border-radius: 6px;
   font-size: 1rem;
+  background-color: #f9fbfc;
+  transition: border-color 0.3s, box-shadow 0.3s;
 }
 
-.form-group input[type="file"] {
-  padding: 3px;
+.form-group input[type="text"]:focus,
+.form-group input[type="email"]:focus {
+  border-color: #d2b48c;
+  box-shadow: 0 0 8px rgba(210, 180, 140, 0.2);
+  outline: none;
 }
 
-.image-preview {
-  margin-top: 10px;
+.form-group input[type="checkbox"] {
+  width: 1.2rem;
+  height: 1.2rem;
+  margin-right: 0.5rem;
+  accent-color: #d2b48c;
+  cursor: pointer;
 }
 
-.image-preview img {
-  max-width: 150px;
-  max-height: 150px;
-  border-radius: 5px;
-  object-fit: cover;
+.form-group input[type="checkbox"]:hover {
+  transform: scale(1.1);
 }
 
-.update-button {
-  background-color: #d2b48c;
+button[type="submit"] {
+  width: 100%;
+  max-width: 400px;
+  padding: 0.75rem;
+  background: linear-gradient(135deg, #d2b48c, #b89778);
   color: #fff;
   border: none;
-  padding: 10px 20px;
-  border-radius: 5px;
-  cursor: pointer;
+  border-radius: 6px;
   font-size: 1rem;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.3s;
 }
 
-.update-button:hover {
-  background-color: #b89778;
+button[type="submit"]:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .error-message {
   color: #ff4d4f;
   font-size: 0.9rem;
   text-align: center;
-  margin-bottom: 15px;
+  background-color: #fff5f5;
+  padding: 0.5rem;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+}
+
+/* Responsive Design */
+@media (max-width: 767px) {
+  .add-user-section {
+    padding: 1rem;
+  }
+
+  .form-group input[type="text"],
+  .form-group input[type="email"] {
+    max-width: 100%;
+  }
+
+  button[type="submit"] {
+    max-width: 100%;
+  }
+
+  .information {
+    font-size: 1.2rem;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .add-user-section {
+    max-width: 500px;
+    padding: 1.25rem;
+  }
+
+  .form-group input[type="text"],
+  .form-group input[type="email"] {
+    max-width: 350px;
+  }
+
+  button[type="submit"] {
+    max-width: 350px;
+  }
 }

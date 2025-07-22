@@ -4,6 +4,8 @@ import SideBar from '../components/SideBar';
 import '../screens/UserScreen.css';
 import AddWorkoutScreen from './AddWorkoutScreen';
 import { useNavigate } from 'react-router-dom';
+import './WorkoutsScreen.css';
+
 
 function WorkoutsScreen() {
   const navigate =useNavigate();

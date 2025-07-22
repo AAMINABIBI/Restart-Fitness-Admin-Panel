@@ -1,108 +1,180 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
 .participants-container {
   display: flex;
   min-height: 100vh;
+  font-family: 'Arial', sans-serif;
+  background-color: #f5f7fa;
 }
 
 .side-bar-container {
-  flex: 0 0 250px;
+  width: 250px;
+  background-color: #ffffff;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
 }
 
 .main-content {
   flex: 1;
-  padding: 20px;
+  padding: 1.5rem;
 }
 
 .participants-section {
-  background: #fff;
-  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+  background: #ffffff;
+  padding: 1.5rem;
   border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 .participants-section h2 {
-  margin-bottom: 20px;
-  font-size: 24px;
-  color: #333;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 1.5rem;
 }
 
 .back-button {
   display: inline-block;
-  padding: 8px 16px;
-  background-color: #ff9800;
-  color: white;
+  padding: 0.75rem 1.5rem;
+  background: linear-gradient(135deg, #d2b48c, #b89778);
+  color: #fff;
   border: none;
-  border-radius: 4px;
+  border-radius: 6px;
   cursor: pointer;
-  margin-bottom: 20px;
+  font-size: 1rem;
+  transition: transform 0.2s, box-shadow 0.3s;
 }
 
 .back-button:hover {
-  background-color: #f57c00;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .participants-table {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 20px;
+  margin-top: 1rem;
 }
 
 .participants-table th,
 .participants-table td {
-  padding: 12px;
+  padding: 0.75rem;
   text-align: left;
-  border-bottom: 1px solid #ddd;
+  border-bottom: 1px solid #dfe6e9;
+  font-size: 0.9rem;
+  color: #2d3436;
 }
 
 .participants-table th {
-  background-color: #f4f4f4;
-  font-weight: bold;
+  background-color: #f9fbfc;
+  font-weight: 600;
+  color: #2c3e50;
 }
 
 .participants-table tr:hover {
-  background-color: #f5f5f5;
+  background-color: #f1f3f5;
 }
 
-.video-row, .score-row, .feedback-row, .action-row {
-  margin: 5px 0;
+.video-row,
+.score-row,
+.feedback-row,
+.action-row {
+  margin: 0.5rem 0;
 }
 
 .play-button {
   display: flex;
   align-items: center;
-  gap: 5px;
-  padding: 5px 10px;
-  background-color: #ff9800;
-  color: white;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: linear-gradient(135deg, #d2b48c, #b89778);
+  color: #fff;
   border: none;
-  border-radius: 4px;
+  border-radius: 6px;
   cursor: pointer;
-  margin-right: 5px;
+  font-size: 0.9rem;
+  transition: transform 0.2s, box-shadow 0.3s;
 }
 
 .play-button:hover {
-  background-color: #f57c00;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-.submit-score-btn, .submit-feedback-btn {
+.submit-score-btn,
+.submit-feedback-btn {
   display: flex;
   align-items: center;
-  gap: 5px;
-  padding: 5px 10px;
-  background-color: #4caf50;
-  color: white;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: linear-gradient(135deg, #d2b48c, #b89778);
+  color: #fff;
   border: none;
-  border-radius: 4px;
+  border-radius: 6px;
   cursor: pointer;
-  margin: 5px 0;
+  font-size: 0.9rem;
+  margin: 0.5rem 0;
+  transition: transform 0.2s, box-shadow 0.3s;
 }
 
-.submit-score-btn:hover, .submit-feedback-btn:hover {
-  background-color: #45a049;
+.submit-score-btn:hover,
+.submit-feedback-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-input[type="number"], input[type="text"] {
-  padding: 5px;
-  margin-left: 10px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
+input[type="number"],
+input[type="text"] {
+  padding: 0.5rem;
+  margin-left: 0.5rem;
+  border: 1px solid #dfe6e9;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  background-color: #f9fbfc;
+  transition: border-color 0.3s;
+}
+
+input[type="number"]:focus,
+input[type="text"]:focus {
+  border-color: #d2b48c;
+  outline: none;
+}
+
+/* Responsive Design */
+@media (max-width: 767px) {
+  .participants-container {
+    flex-direction: column;
+  }
+
+  .side-bar-container {
+    width: 100%;
+    height: auto;
+  }
+
+  .participants-section {
+    padding: 1rem;
+  }
+
+  .participants-table {
+    display: block;
+    overflow-x: auto;
+  }
+
+  .participants-table th,
+  .participants-table td {
+    font-size: 0.8rem;
+    padding: 0.5rem;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .participants-section {
+    max-width: 700px;
+    padding: 1.25rem;
+  }
 }
